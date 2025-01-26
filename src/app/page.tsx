@@ -37,7 +37,7 @@ export default function Home() {
     const [ loadingInfo ] = useAtom(loadingInfoAtom);
 
     return (
-        <div>
+        <div onContextMenu={(evt)=>evt.preventDefault()}>
             {/* <Guide /> */}
             <div className={styles.Graph}>
                 <Graph />
