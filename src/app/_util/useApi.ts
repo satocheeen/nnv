@@ -88,12 +88,12 @@ export default function useApi() {
             token,
             params,
         });
-        const apiRes = result.data as ApiResult<RESULT>;
-        if (apiRes.result === "error") {
-            console.warn(apiRes.message);
-            throw apiRes.message;
+        if (result.status !== 200) {
+            console.warn(result.data);
+            throw `failed ${action}`;
         }
-        return apiRes.data as RESULT;
+        const apiRes = result.data as RESULT;
+        return apiRes;
 
     }, [getToken]);
 
