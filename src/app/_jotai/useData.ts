@@ -265,6 +265,38 @@ export default function useData() {
         }, [replaceDataSet])
     )
 
+    const updatePosition = useAtomCallback(
+        useCallback((get, set, payload: {
+            datasetId: string;
+            dbId: string;
+            id: string;
+            position: {
+                x: number;
+                y: number;
+            };
+        }) => {
+            const currentDataset= get(currentDatasetAtom);
+            if (!currentDataset) {
+                return;
+            }
+            const index = currentDataset.dataMap[payload.dbId]?.items.findIndex(item => item.id === payload.id);
+            if (index === -1) {
+                return;
+            }
+            const newPositionMap = Object.assign({}, currentDataset.positionMap);
+            if (newPositionMap[payload.dbId] === undefined) {
+                newPositionMap[payload.dbId] = {};
+            }
+            newPositionMap[payload.dbId][payload.id] = payload.position;
+        
+            replaceDataSet({
+                datasetId: payload.datasetId,
+                positionMap: newPositionMap,
+            });
+                
+        }, [replaceDataSet])
+    )
+
     const loadData = useAtomCallback(
         useCallback(async(get, set, dbDefine: DbDefineWithRelation) => {
             const currentDataset= get(currentDatasetAtom);
@@ -721,6 +753,7 @@ export default function useData() {
         updateNetworkDefine,
         removeNetworkDefine,
         updateDatasetName,
+        updatePosition,
     }
 
 }

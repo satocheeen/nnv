@@ -9,6 +9,7 @@ import { t } from 'i18next';
 import useGuide, { tempGuideAtom } from '@/app/_jotai/useGuide';
 import { GuideKind } from '@/app/_types/types';
 import { filterAtom } from '@/app/_jotai/useFilter';
+import useData from '@/app/_jotai/useData';
 
 export default function Graph() {
     const [ currentDataset ] = useAtom(currentDatasetAtom);
@@ -18,6 +19,7 @@ export default function Graph() {
     const [ , setTempGuide ] = useAtom(tempGuideAtom);
     const [ , setLoadingInfo ] = useAtom(loadingInfoAtom);
     const { operatedGuide } = useGuide();
+    const { updatePosition } = useData();
 
     // Cytoscape初期化
     useEffect(() => {
@@ -46,7 +48,7 @@ export default function Graph() {
                 operatedGuide,
             },
             onNodeMove(args) {
-                
+                updatePosition(args);
             },
             onRelayoutStart() {
                 setLoadingInfo({

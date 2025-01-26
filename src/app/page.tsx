@@ -1,5 +1,4 @@
 "use client"
-import dynamic from "next/dynamic";
 import styles from "./page.module.scss";
 import useSettingStore from "./_jotai/useSettingStore";
 import { useCallback, useEffect } from "react";
