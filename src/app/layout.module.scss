@@ -1,0 +1,9 @@
+@import './_styles/global.scss';
+
+.Footer {
+    position: fixed;
+    bottom: 0rem;
+    right: 0.5rem;
+    color: $dark-color-50;
+    font-size: 80%;
+}

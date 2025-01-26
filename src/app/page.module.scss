@@ -3,3 +3,32 @@
   width: 100vw;
   height: 100vh;
 }
+
+$spinnerSize: 36px;
+.GraphSpinner {
+    position: absolute;
+    z-index: 10;
+    top: calc(50% - $spinnerSize/2);
+    left: calc(50% - $spinnerSize/2);
+    width: $spinnerSize;
+    height: $spinnerSize;
+    text-align: center;
+}
+.SpinnerOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(#fff, .5);
+    z-index: 10;
+
+    p {
+        position: absolute;
+        z-index: 10;
+        top: calc(50% - $spinnerSize/2 + $spinnerSize);
+        width: 100%;
+        text-align: center;
+        color: #555;
+    }
+}

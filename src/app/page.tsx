@@ -7,6 +7,9 @@ import { dataSetsAtom } from "./_jotai/useData";
 import Graph from "./_components/chart/Graph";
 import { useAtomCallback } from "jotai/utils";
 import ControlPanel from "./_components/panel/ControlPanel";
+import { Spinner } from "react-bootstrap";
+import { useAtom } from "jotai";
+import { loadingInfoAtom } from "./_jotai/operation";
 
 export default function Home() {
     const { hasData } = useSettingStore();
@@ -31,6 +34,8 @@ export default function Home() {
         setTimeout(checkShowSettingDialog, 500)
     }, []);
 
+    const [ loadingInfo ] = useAtom(loadingInfoAtom);
+
     return (
         <div>
             {/* <Guide /> */}
@@ -41,7 +46,14 @@ export default function Home() {
             {/* {createPageDialogTarget &&
                 <CreatePageDialog show={showCreatePageDialog} onHide={onCreatePageDialogHide} target={createPageDialogTarget}/>
             } */}
-            {/* <AlertDialog /> */}
+            {loadingInfo.loading &&
+                <div className={styles.SpinnerOverlay}>
+                    <div className={styles.GraphSpinner}>
+                        <Spinner animation='border' variant='info'/>
+                    </div>
+                    <p>{loadingInfo.status}</p>
+                </div>
+            }
         </div>
     );
 }
