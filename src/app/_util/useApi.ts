@@ -1,6 +1,6 @@
 import axios from "axios";
 import { NotionOauth, Property } from "../_types/types"
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { atom, useAtom } from "jotai";
 import { currentDatasetAtom } from "../_jotai/operation";
 import { DbInfo, WorkspaceInfo } from "../api/get_dblist/types";
@@ -11,8 +11,23 @@ import { GetDeletedParam, GetDeletedResult } from "../api/get_deleted/types";
 import { CreatePageParam, CreatePageResult } from "../api/create_page/types";
 import { CreateRelationParam, CreateRelationResult } from "../api/create_relation/types";
 import { RemoveRelationParam } from "../api/remove_relation/types";
+import { useAtomCallback } from "jotai/utils";
 
 const oAuthInfosAtom = atom<NotionOauth[]>([]);
+const myOAuthInfosAtom = atom((get) => {
+    if (process.env.NEXT_PUBLIC_DEVELOPER_MODE==='true') {
+        return [{
+            access_token: '',
+            workspace_id: '',
+        } as NotionOauth];
+    }
+    const originalOAuthInfos = get(oAuthInfosAtom);
+    return originalOAuthInfos;
+})
+const hasTokenAtom = atom((get) => {
+    const oAuthInfos = get(myOAuthInfosAtom);
+    return oAuthInfos.length > 0;
+})
 
 type ApiResult<RESULT> = {
     result: 'ok' | 'error';
@@ -22,23 +37,7 @@ type ApiResult<RESULT> = {
 
 console.log('process.env.NEXT_PUBLIC_DEVELOPER_MODE', process.env.NEXT_PUBLIC_DEVELOPER_MODE)
 export default function useApi() {
-    const [ originalOAuthInfos ] = useAtom(oAuthInfosAtom);
-
-    const oAuthInfos = useMemo(() => {
-        if (process.env.NEXT_PUBLIC_DEVELOPER_MODE==='true') {
-            return [{
-                access_token: '',
-                workspace_id: '',
-            } as NotionOauth];
-        }
-        return originalOAuthInfos;
-    }, [originalOAuthInfos]);
-
-    const hasToken = useMemo(() => {
-        return oAuthInfos.length > 0;
-    }, [oAuthInfos]);
-
-    const [ currentDataset ] = useAtom(currentDatasetAtom);
+    const [ hasToken ] = useAtom(hasTokenAtom);
 
     /**
      * Notion認証を行う
@@ -60,14 +59,18 @@ export default function useApi() {
      * 指定のワークスペース用のtokenを返す。
      * ワークスペース未指定の場合は、カレントデータセットのワークスペースのtokenを返す。
      */
-    const getToken = useCallback((workspaceId?: string): string | undefined => {
-        const wpId = workspaceId ? workspaceId : currentDataset?.networkDefine.workspaceId;
-        if (!wpId) {
-            return undefined;
-        }
-        const token = oAuthInfos.find(info => info.workspace_id === wpId)?.access_token;
-        return token;
-    }, [oAuthInfos, currentDataset]);
+    const getToken = useAtomCallback(
+        useCallback((get, set, workspaceId?: string): string | undefined => {
+            const currentDataset = get(currentDatasetAtom);
+            const oAuthInfos = get(myOAuthInfosAtom);
+            const wpId = workspaceId ? workspaceId : currentDataset?.networkDefine.workspaceId;
+            if (!wpId) {
+                return undefined;
+            }
+            const token = oAuthInfos.find(info => info.workspace_id === wpId)?.access_token;
+            return token;
+        }, [])
+    )
 
     /**
      * 
@@ -97,50 +100,54 @@ export default function useApi() {
 
     }, [getToken]);
 
-    const getDbList = async(): Promise<WorkspaceInfo[]> => {
-        const resultList = [] as WorkspaceInfo[];
-        // アクセス可能な全てのワークスペースのDB一覧を取得する
-        for (const oAuthInfo of oAuthInfos) {
-            console.log('getDbList', oAuthInfo);
-            const dbInfos = await apiAction<DbInfo[]>('get_dblist', undefined, oAuthInfo.workspace_id);
-            if (dbInfos.length === 0) {
-                continue;
-            }
-            // 加工
-            const dbDefines = dbInfos.map(res => {
-                return {
-                    id: res.id,
-                    name: res.title,
-                    icon: res.icon,
-                    properties: Object.values(res.properties).map(prop => {
-                        let relation;
-                        if (prop.type === 'relation') {
-                            const relDb = dbInfos.find(r => r.id === prop.relation?.database_id);
-                            const relProp = relDb?.properties[prop.relation?.synced_property_name as string];
-                            relation = {
-                                dbId: relDb?.id as string,
-                                propertyId: relProp?.id as string,
+    const getDbList = useAtomCallback(
+        useCallback(async(get) => {
+            const resultList = [] as WorkspaceInfo[];
+            // アクセス可能な全てのワークスペースのDB一覧を取得する
+            const oAuthInfos = get(myOAuthInfosAtom);
+            for (const oAuthInfo of oAuthInfos) {
+                console.log('getDbList', oAuthInfo);
+                const dbInfos = await apiAction<DbInfo[]>('get_dblist', undefined, oAuthInfo.workspace_id);
+                if (dbInfos.length === 0) {
+                    continue;
+                }
+                // 加工
+                const dbDefines = dbInfos.map(res => {
+                    return {
+                        id: res.id,
+                        name: res.title,
+                        icon: res.icon,
+                        properties: Object.values(res.properties).map(prop => {
+                            let relation;
+                            if (prop.type === 'relation') {
+                                const relDb = dbInfos.find(r => r.id === prop.relation?.database_id);
+                                const relProp = relDb?.properties[prop.relation?.synced_property_name as string];
+                                relation = {
+                                    dbId: relDb?.id as string,
+                                    propertyId: relProp?.id as string,
+                                }
                             }
-                        }
-                        return {
-                            id: prop.id,
-                            name: prop.name,
-                            type: prop.type,
-                            isUse: false,
-                            relation,
-                        } as Property;
-                    }),
-                };
-            });
-
-            resultList.push({
-                workspaceId: oAuthInfo.workspace_id,
-                workspaceName: oAuthInfo.workspace_name,
-                dbDefines,
-            });
-        }
-        return resultList;
-    }
+                            return {
+                                id: prop.id,
+                                name: prop.name,
+                                type: prop.type,
+                                isUse: false,
+                                relation,
+                            } as Property;
+                        }),
+                    };
+                });
+    
+                resultList.push({
+                    workspaceId: oAuthInfo.workspace_id,
+                    workspaceName: oAuthInfo.workspace_name,
+                    dbDefines,
+                });
+            }
+            return resultList;
+        }, [apiAction])
+    
+    )
     
      /**
      * get_options

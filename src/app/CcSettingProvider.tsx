@@ -4,6 +4,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import lang from './_define/lang';
+import { SettingDialog } from './_components/setting/SettingDialog';
 
 // クライアントコンポーネントとして定義する必要があるものを、
 // layout.tsxの外に切り出している
@@ -24,8 +25,9 @@ console.log('lang', i18n.language);
 export default function CcSettingProvider({ children }: React.PropsWithChildren) {
     return (
         <>
-            {children}
             <Confirm.Root />
+            <SettingDialog.Root />
+            {children}
         </>
     );
 }

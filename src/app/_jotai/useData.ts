@@ -5,13 +5,15 @@ import { DataSet, DbData, DbDefine, DbDefineWithRelation, Edge, NetworkDefine, N
 import { useAtomCallback } from "jotai/utils";
 import { currentDatasetAtom, loadingInfoAtom } from "./operation";
 import { isSameProperty } from "../_util/utility";
-import { atom } from "jotai";
+import { atomWithStorage } from 'jotai/utils';
 
 type NodeItemWithPosition = NodeItem & {
     position?: {x: number; y: number};
 }
 
-export const dataSetsAtom = atom<DataSet[]>([]);
+export const dataSetsAtom = atomWithStorage<DataSet[]>('dataSets', [], undefined, {
+    getOnInit: true,
+});
 
 export default function useData() {
     const { t } = useTranslation();

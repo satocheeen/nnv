@@ -16,30 +16,25 @@ import SelectDatasetBody from './SelectDatasetBody';
 import SelectDatabaseBody from './SelectDatabaseBody';
 import SelectRelationBody from './SelectRelationBody';
 import SelectFilterPropertyBody from './SelectFilterPropertyBody';
+import { createCallable } from 'react-call';
 
-type Props = {
-    show: boolean;
-    onHide: () => void;
-}
-export default function SettingDialog(props: Props) {
+export const SettingDialog = createCallable<void, void>(({ call }) => {
     const { step, setStep, selectDatasetId, setSelectDatasetId, networkDefine, initialize } = useSettingStore();
     const [loading, setLoading] = useState(false);
     const [workspaceList, setWorkspaceList] = useState([] as WorkspaceInfo[]);
     const [ datasets ] = useAtom(dataSetsAtom);
     const { t } = useTranslation();
-    const api = useApi();
+    const { getDbList, hasToken, oAuth } = useApi();
     const { getData, createDataset, updateNetworkDefine } = useData();
 
     const onHide = useCallback(() => {
         initialize();
-        props.onHide();
-    }, [props, initialize]);
+        call.end();
+    }, [call, initialize]);
 
     // 初期化
+    // TODO: 記述場所見直し
     useEffect(() => {
-        if (!props.show) {
-            return;
-        }
         console.log('initialize');
         if (step !== Step.SelectDataset) {
             // 以前の状態が残っている場合
@@ -55,36 +50,31 @@ export default function SettingDialog(props: Props) {
             setStep(Step.SelectDataset);
         }
         // check token
-        if (!api.hasToken) {
-            api.oAuth();
+        if (!hasToken) {
+            oAuth();
             return;
         }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.show]);
+    }, []);
 
     // DB一覧読み込み
-    const loadDbList = useCallback(async() => {
-        setLoading(true);
-        try {
-            const workspaceInfo = await api.getDbList();
-            setWorkspaceList(workspaceInfo);
-        } catch(e) {
-            Confirm.call({
-                message: t('Error_GetDbList') + '\n' + e,
-            })
-        } finally {
-            setLoading(false);
-        }
-    }, [t, api]);
-
     useEffect(() => {
-        if (!props.show) {
-            return;
+        const loadDbList = async() => {
+            setLoading(true);
+            try {
+                const workspaceInfo = await getDbList();
+                setWorkspaceList(workspaceInfo);
+            } catch(e) {
+                Confirm.call({
+                    message: t('Error_GetDbList') + '\n' + e,
+                })
+            } finally {
+                setLoading(false);
+            }
         }
         loadDbList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.show]);
+    }, [getDbList, t]);
 
     const dbList = useMemo(() => {
         const target = workspaceList.find(ws => ws.workspaceId === networkDefine?.workspaceId);
@@ -147,8 +137,8 @@ export default function SettingDialog(props: Props) {
             // 最新データ取得
             setReserveLoadLatestData(true);
     
-            props.onHide();
-        }, [createDataset, networkDefine, props, selectDatasetId, updateNetworkDefine])
+            call.end();
+        }, [call, createDataset, networkDefine, selectDatasetId, updateNetworkDefine])
     )
 
     const onNext = useCallback(() => {
@@ -180,11 +170,11 @@ export default function SettingDialog(props: Props) {
     }, [step, workspaceList, loading, dbList, onNext, onBack, onHide, onSave])
 
     return (
-        <Modal show={props.show} onHide={onHide} backdrop="static">
+        <Modal show onHide={onHide} backdrop="static">
             <Modal.Header closeButton>
                 {t('Setting')}
             </Modal.Header>
             {body}
         </Modal>
     )
-}
+})
