@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, Spinner } from 'react-bootstrap';
-// import SelectFilterPropertyBody from './SelectFilterPropertyBody';
 import useApi from '@/app/_util/useApi';
 import { useTranslation } from 'react-i18next';
 import * as EventController from '@/app/_util/EventController';
@@ -16,6 +15,7 @@ import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import SelectDatasetBody from './SelectDatasetBody';
 import SelectDatabaseBody from './SelectDatabaseBody';
 import SelectRelationBody from './SelectRelationBody';
+import SelectFilterPropertyBody from './SelectFilterPropertyBody';
 
 type Props = {
     show: boolean;
@@ -174,8 +174,8 @@ export default function SettingDialog(props: Props) {
                 return <SelectDatabaseBody onNext={onNext} onBack={onBack} workspaceList={workspaceList} />;
             case Step.SelectRelationCol:
                 return <SelectRelationBody dbList={dbList} onNext={onNext} onBack={onBack} />;
-            // case Step.SelectFilterCol:
-            //     return <SelectFilterPropertyBody onSave={onSave} onBack={onBack} />
+            case Step.SelectFilterCol:
+                return <SelectFilterPropertyBody onSave={onSave} onBack={onBack} />
         }
     }, [step, workspaceList, loading, dbList, onNext, onBack, onHide, onSave])
 
