@@ -12,6 +12,7 @@
     "@types/cytoscape": "^3.21.8",
     "@types/cytoscape-cxtmenu": "^3.4.4",
     "@types/cytoscape-edgehandles": "^4.0.4",
+    "bootstrap": "^5.3.3",
     "cytoscape": "^3.31.0",
     "cytoscape-cxtmenu": "^3.5.0",
     "cytoscape-edgehandles": "^4.0.1",
@@ -23,7 +24,9 @@
     "react-call": "^1.7.0",
     "react-dom": "^19.0.0",
     "react-i18next": "^15.4.0",
-    "sass": "^1.83.4"
+    "react-icons": "^5.4.0",
+    "sass": "^1.83.4",
+    "use-media": "^1.5.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

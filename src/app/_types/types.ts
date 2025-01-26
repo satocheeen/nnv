@@ -128,11 +128,6 @@ export type NotionProperty = {
     }
 }
 
-export type Filter = {
-    categories: {[id: string]: boolean};   // key = DBID-属性ID-カテゴリID, value = 表示or非表示
-    keywords: string[]; // キーワード。AND検索。
-}
-
 export type DialogParam = {
     mode?: DialogMode;
     title?: string;

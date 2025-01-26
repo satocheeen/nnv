@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { DbDefine, DialogParam, Filter } from "../_types/types";
+import { DbDefine, DialogParam } from "../_types/types";
 import { dataSetsAtom } from "./data";
 
 export const visitedAtom = atom(false);
@@ -11,10 +11,6 @@ export const currentDatasetAtom = atom((get) => {
     return datasets.find(ds => ds.id === currentDatasetId);
 })
 
-export const filterAtom = atom<Filter>({
-    categories: {},
-    keywords: [],
-});
 type CreatePageDialogTargetType = {
     dbDefine: DbDefine;
     position: {x: number; y: number};

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
-import { currentDatasetAtom, filterAtom, loadingInfoAtom } from '@/app/_jotai/operation';
+import { currentDatasetAtom, loadingInfoAtom } from '@/app/_jotai/operation';
 import { useAtom } from 'jotai';
 import React, { useEffect, useRef } from 'react';
 import styles from './Graph.module.scss';
@@ -8,6 +8,7 @@ import Chart from './Chart';
 import { t } from 'i18next';
 import useGuide, { tempGuideAtom } from '@/app/_jotai/useGuide';
 import { GuideKind } from '@/app/_types/types';
+import { filterAtom } from '@/app/_jotai/useFilter';
 
 export default function Graph() {
     const [ currentDataset ] = useAtom(currentDatasetAtom);

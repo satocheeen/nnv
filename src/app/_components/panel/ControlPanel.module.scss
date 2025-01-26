@@ -1,0 +1,71 @@
+@import '@/app/_styles/global.scss';
+.ControlArea {
+    position: fixed;
+    z-index: 10;
+    &.pc {
+        top: 0px;
+        right: 5px;
+    }
+    &.sp {
+        bottom: 0px;
+        left: 0px;
+    }
+
+    .Container {
+        width: 250px;
+        background-color: rgba(255,255,255,.85);
+        background-clip: padding-box;
+        border: 1px solid rgba(0,0,0,.1);
+        box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%);
+        border-radius: 0.25rem;
+    
+        padding: 5px;
+
+        transition-property: margin-left;
+        transition-duration: 0.5s;
+
+        &.Close {
+            margin-left: -250px;
+            // display: none;
+        }
+
+        .Btn {
+            :first-child {
+                margin-right: 5px;
+            }
+            width: 180px;
+            margin-top: 5px;
+        }
+        .SubHeader {
+            font-weight: 600;
+            border-bottom: 1px solid $dark-color-50;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .FilterArea {
+            margin-bottom: 10px;
+        }
+        .ClearArea {
+            text-align: right;
+        }
+        .Footer {
+            text-align: right;
+            font-size: 80%;
+            margin-top: 20px;
+            margin-bottom: 0;
+            a {
+                color: $dark-color-50;
+            }
+        }
+    }
+
+    .ToggleBtn {
+        position: absolute;
+        bottom: 0px;
+        left: 0px;
+    }
+}
+

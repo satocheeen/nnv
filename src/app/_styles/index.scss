@@ -1,0 +1,55 @@
+@import './global.scss';
+
+$theme-colors: (
+    "primary": $primary-color,
+    "secondary": $secondary-color,
+    "info": $dark-color-50,
+);
+
+@import "~bootstrap/scss/bootstrap";
+
+.btn-outline-primary:hover, .btn-outline-secondary:hover,
+.btn-primary, .btn-secondary {
+  color: #fff !important;
+}
+:root{
+  --font-family-sans-serif: sans-serif;
+  --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  font-family: var(--font-family-sans-serif);
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	    -ms-user-select: none;
+	        user-select: none;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: $dark-color-80;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+a {
+  color: $primary-color;
+  opacity: .8;
+
+  &:hover {
+    color: $primary-color;
+    opacity: 1;
+  }
+}
+
+// bootstrap list active item color
+.list-group-item.active {
+  background-color: $secondary-color;
+  border-color: $secondary-color;
+}
+.form-check-input:checked {
+  background-color: $primary-color;
+  border-color: $primary-color;
+}
