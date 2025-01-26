@@ -9,14 +9,23 @@ import { useAtomCallback } from "jotai/utils";
 import ControlPanel from "./_components/panel/ControlPanel";
 import { Spinner } from "react-bootstrap";
 import { useAtom } from "jotai";
-import { loadingInfoAtom } from "./_jotai/operation";
+import { loadingInfoAtom, visitedAtom } from "./_jotai/operation";
 import Guide from "./_components/guide/Guide";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
     const { hasData } = useSettingStore();
+    const router = useRouter();
 
     const checkShowSettingDialog = useAtomCallback(
         useCallback((get) => {
+            // 最初の訪問時はWelcome画面に遷移
+            const visited = get(visitedAtom);
+            console.log('visited', visited)
+            if (!visited) {
+                router.push('/welcome');
+                return;
+            }
             const datasets = get(dataSetsAtom);
             // 設定画面の情報があるなら、設定画面を開く
             if (hasData) {
@@ -26,13 +35,12 @@ export default function Home() {
                 // データセットが存在しない場合も、設定画面を開く
                 SettingDialog.call();
             }
-        }, [hasData])
+        }, [hasData, router])
     )
     
     // 起動時
     useEffect(() => {
-        // storageからの値読み込みが完了するのを待つ
-        setTimeout(checkShowSettingDialog, 500)
+        checkShowSettingDialog();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

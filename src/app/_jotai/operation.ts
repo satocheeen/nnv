@@ -3,7 +3,7 @@ import { DbDefine, DialogParam } from "../_types/types";
 import { dataSetsAtom } from "./useData";
 import { atomWithStorage } from "jotai/utils";
 
-export const visitedAtom = atom(false);
+export const visitedAtom = atomWithStorage('visited', false, undefined, { getOnInit: true });
 export const currentDatasetIdAtom = atomWithStorage<string|undefined>('currentDatasetId', undefined);
 
 export const currentDatasetAtom = atom((get) => {
