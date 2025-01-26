@@ -4,11 +4,11 @@ import cycxtmenu, { Command } from 'cytoscape-cxtmenu';
 import edgehandles from 'cytoscape-edgehandles';
 import chartStyles from './styles';
 import { TFunction } from 'i18next';
-import { DataSet, Edge, NodeItem, RelationDefineKey, Filter, GuideKind, TempGuideKind, DbDefine } from '../../_types/types';
+import { DataSet, Edge, NodeItem, RelationDefineKey, GuideKind, TempGuideKind, DbDefine } from '../../_types/types';
 import * as EventController from '../../_util/EventController';
 import { getEdgeKey, getRelationKey } from '../../_util/utility';
-import notionLogo from '../../_assets/notion-logo.png';
 import { Colors } from '@/app/_util/const';
+import { Filter } from '@/app/_jotai/useFilter';
 
 cytoscape.use(cycxtmenu);
 cytoscape.use(edgehandles);
@@ -289,7 +289,7 @@ export default class Chart {
         this.nodeMenues.forEach(menu => menu.destroy());
         const commonNodeCommands = [
             {
-                content: '<span>' + this._param.t('Open_Notion', '') + '</span><img src="' + notionLogo + '" width="40" alt="Notion Logo" />',
+                content: '<span>' + this._param.t('Open_Notion', '') + '</span><img src="/notion-logo.png" width="40" alt="Notion Logo" />',
                 select: (element) => {
                     // this.operation.operatedGuide(GuideKind.NodeClick);
                     this._param.guideController.operatedGuide(GuideKind.NodeClick);

@@ -17,6 +17,7 @@ import useData from '@/app/_jotai/useData';
 import { useAtomCallback } from 'jotai/utils';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import SelectDatasetBody from './SelectDatasetBody';
+import SelectDatabaseBody from './SelectDatabaseBody';
 
 type Props = {
     show: boolean;
@@ -172,7 +173,7 @@ export default function SettingDialog(props: Props) {
                         </div>
                     );
                 }
-            //     return <SelectDatabaseBody onNext={onNext} onBack={onBack} workspaceList={workspaceList} />;
+                return <SelectDatabaseBody onNext={onNext} onBack={onBack} workspaceList={workspaceList} />;
             // case Step.SelectRelationCol:
             //     return <SelectRelationBody dbList={dbList} onNext={onNext} onBack={onBack} />;
             // case Step.SelectFilterCol:
