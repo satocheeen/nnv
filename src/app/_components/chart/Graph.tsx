@@ -2,16 +2,21 @@
 "use client"
 import { currentDatasetAtom, loadingInfoAtom } from '@/app/_jotai/operation';
 import { useAtom } from 'jotai';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './Graph.module.scss';
 import Chart from './Chart';
 import { t } from 'i18next';
 import useGuide, { tempGuideAtom } from '@/app/_jotai/useGuide';
-import { GuideKind } from '@/app/_types/types';
+import { DbDefine, GuideKind } from '@/app/_types/types';
 import { filterAtom } from '@/app/_jotai/useFilter';
 import useData from '@/app/_jotai/useData';
 import { useWatch } from '@/app/_util/useWatch';
+import CreatePageDialog from '../CreatePageDialog';
 
+type CreatePageDialogTarget = {
+    target: DbDefine;
+    position: {x: number; y: number};
+}
 export default function Graph() {
     const [ currentDataset ] = useAtom(currentDatasetAtom);
     const myRef = useRef(null as HTMLDivElement | null);
@@ -21,6 +26,7 @@ export default function Graph() {
     const [ , setLoadingInfo ] = useAtom(loadingInfoAtom);
     const { operatedGuide } = useGuide();
     const { updatePosition } = useData();
+    const [ createPageDialogTarget, setCreatePageDialogTarget ] = useState<CreatePageDialogTarget|null>(null);
 
     // Cytoscape初期化
     useEffect(() => {
@@ -63,6 +69,7 @@ export default function Graph() {
             },
             onCreatePageMenuClicked(args) {
                 operatedGuide(GuideKind.CoreClick);
+                setCreatePageDialogTarget(args);
             },
             onRelationCreated(args) {
                 
@@ -93,8 +100,13 @@ export default function Graph() {
     })
 
     return (
-        <div className={styles.Container}>
-            <div ref={myRef} className={styles.Chart} />
-        </div>
+        <>
+            <div className={styles.Container}>
+                <div ref={myRef} className={styles.Chart} />
+            </div>
+            {createPageDialogTarget &&
+                <CreatePageDialog show onHide={()=>setCreatePageDialogTarget(null)} target={createPageDialogTarget}/>
+            }
+        </>
     );
 }

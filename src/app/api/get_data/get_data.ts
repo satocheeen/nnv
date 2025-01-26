@@ -1,8 +1,7 @@
 import { Client } from '@notionhq/client';
 import { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { GetDataItem, GetDataParam, GetDataResult } from './types';
-import { GetSingleDataParam, GetSingleDataResult } from '../get_single_data/types';
-import { DbDefineWithRelation, OptionItem } from '@/app/_types/types';
+import { DbDefineWithRelation } from '@/app/_types/types';
 
 export const getData = async(token: string, param: GetDataParam): Promise<GetDataResult> => {
     const notion = new Client({
@@ -51,27 +50,7 @@ export const getData = async(token: string, param: GetDataParam): Promise<GetDat
     }
 }
 
-export const getSingleData = async(token: string, param: GetSingleDataParam): Promise<GetSingleDataResult> => {
-    const notion = new Client({
-        auth: token,
-    });
-    const page = await notion.pages.retrieve({
-        page_id: param.id,
-    });
-    if (!('properties' in page)) {
-        throw new Error('想定外')
-    }
-
-    const categoryList = [] as OptionItem[];
-    const item = await createItem(param.dbDefine, page);
-
-    return {
-        categories: categoryList,
-        item,
-    } as GetSingleDataResult;
-}
-
-const createItem = async(define: DbDefineWithRelation, page: PageObjectResponse) => {
+export const createItem = async(define: DbDefineWithRelation, page: PageObjectResponse) => {
     // const image = await getImageUrl(page.id);
 
     const titleCol = Object.values(page.properties).find(prop => prop.type === 'title');

@@ -40,7 +40,7 @@ type Param = {
     // 新規ページ作成メニュークリック時のコールバック
     onCreatePageMenuClicked: (args: {
         target: DbDefine;
-        position?: {x: number; y: number;}
+        position: {x: number; y: number;}
     }) => void;
 
     // リレーション作成時のコールバック

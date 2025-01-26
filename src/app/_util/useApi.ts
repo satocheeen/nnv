@@ -6,7 +6,7 @@ import { currentDatasetAtom } from "../_jotai/operation";
 import { DbInfo, WorkspaceInfo } from "../api/get_dblist/types";
 import { GetOptionsParam, GetOptionsResult } from "../api/get_options/types";
 import { GetDataParam, GetDataResult } from "../api/get_data/types";
-import { GetSingleDataParam, GetSingleDataResult } from "../api/get_single_data/types";
+import { GetSingleDataParam, GetSingleDataResult } from "../api/get_singledata/types";
 import { GetDeletedParam, GetDeletedResult } from "../api/get_deleted/types";
 import { CreatePageParam, CreatePageResult } from "../api/create_page/types";
 import { CreateRelationParam, CreateRelationResult } from "../api/create_relation/types";

@@ -2,13 +2,13 @@ import React, { useCallback, useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { DbDefine } from '../_types/types';
-// import useData from '../store/data/useData';
 import { Confirm } from './Confirm';
+import useData from '../_jotai/useData';
 
 type Props = {
     show: boolean;
     target: {
-        dbDefine: DbDefine;
+        target: DbDefine;
         position: {x: number; y: number};
     };
     onHide: () => void;
@@ -16,7 +16,7 @@ type Props = {
 
 export default function CreatePageDialog(props: Props) {
     const { t } = useTranslation();
-    // const dataHook = useData();
+    const { createPage } = useData();
 
     const onHide = useCallback(() => {
         props.onHide();
@@ -29,18 +29,18 @@ export default function CreatePageDialog(props: Props) {
 
     const onCreate = useCallback(async() => {
         try {
-            // await dataHook.createPage(props.target.dbDefine, title, props.target.position);
+            await createPage(props.target.target, title, props.target.position);
         } catch(e) {
             Confirm.call({
                 message: t('Error_CreatePage') + '\n' + e,
             });
         }
         props.onHide();
-    }, [props, title, t]);
+    }, [props, createPage, title, t]);
 
     return (
         <Modal show={props.show} onHide={onHide}>
-            <Modal.Header closeButton>{props.target.dbDefine.name}ページ作成</Modal.Header>
+            <Modal.Header closeButton>{props.target.target.name}ページ作成</Modal.Header>
             <Modal.Body>
                 <Form>
                     <Form.Group>
