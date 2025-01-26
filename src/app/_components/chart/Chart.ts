@@ -7,7 +7,7 @@ import { TFunction } from 'i18next';
 import { DataSet, Edge, NodeItem, RelationDefineKey, GuideKind, TempGuideKind, DbDefine } from '../../_types/types';
 import * as EventController from '../../_util/EventController';
 import { getEdgeKey, getRelationKey } from '../../_util/utility';
-import { Colors } from '@/app/_util/const';
+import { Colors } from '@/app/_define/const';
 import { Filter } from '@/app/_jotai/useFilter';
 
 cytoscape.use(cycxtmenu);

@@ -25,6 +25,7 @@ import useFilter, { filterAtom } from '@/app/_jotai/useFilter';
 import DatasetSelector from './DatasetSelector';
 import useData from '@/app/_jotai/useData';
 import StyleSettingDialog from '../style-setting/StyleSettingDialog';
+import CategoryCheckList from './CategoryCheckList';
 
 export default function ControlPanel() {
     const { t } = useTranslation();
@@ -114,7 +115,7 @@ export default function ControlPanel() {
                     </Form.Group>
                 </div>
                 <div className={styles.FilterArea}>
-                    {/* <CategoryCheckList /> */}
+                    <CategoryCheckList />
                 </div>
                 <p className={styles.Footer}>
                     <Link href="/welcome">About</Link>

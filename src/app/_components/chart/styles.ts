@@ -1,4 +1,4 @@
-import { ImageSize } from '@/app/_util/const';
+import { ImageSize } from '@/app/_define/const';
 import cytoscape from 'cytoscape';
 
 const style = [

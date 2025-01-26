@@ -12,7 +12,33 @@ export const filterAtom = atom<Filter>({
     keywords: [],
 });
 
+export type CategoryFilterItem = {
+    dbId: string;
+    propertyId: string;
+    optionId: string;
+    isShow: boolean;
+}
 export default function useFilter() {
+    /**
+     * 指定のカテゴリのフィルタ設定を切り替える
+     * @param payload 
+     */
+    const setCategoryFilter = useAtomCallback(
+        useCallback((get, set, categories: CategoryFilterItem[]) => {
+            set(filterAtom, cur => {
+                const newCategories = structuredClone(cur.categories);
+                categories.forEach(category => {
+                    const key = category.dbId + '-' + category.propertyId + '-' + category.optionId;
+                    newCategories[key] = category.isShow;
+                });
+                return {
+                    categories: newCategories,
+                    keywords: cur.keywords,
+                }
+            })
+        }, [])
+    )
+    
     const setKeywordFilter = useAtomCallback(
         useCallback((get, set, keywords: string[]) => {
             set(filterAtom, cur => {
@@ -40,6 +66,7 @@ export default function useFilter() {
     )
 
     return {
+        setCategoryFilter,
         setKeywordFilter,
         clearFilter,
     }

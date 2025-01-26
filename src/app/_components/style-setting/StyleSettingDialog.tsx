@@ -40,13 +40,6 @@ export default function StyleSettingDialog(props: Props) {
         setNetworkDefine(val.networkDefine);
         setEditTargetId(undefined);
     })
-    // useEffect(() => {
-    //     if (!currentDataset) {
-    //         return;
-    //     }
-    //     setNetworkDefine(currentDataset.networkDefine);
-    //     setEditTargetId(undefined);
-    // }, [currentDataset, props.show]);
 
     const { updateNetworkDefine } = useData();
     const onOk = useCallback(() => {

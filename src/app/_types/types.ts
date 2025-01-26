@@ -1,4 +1,4 @@
-import { Colors } from "../_util/const";
+import { Colors } from "../_define/const";
 
 /**
  * 操作説明
