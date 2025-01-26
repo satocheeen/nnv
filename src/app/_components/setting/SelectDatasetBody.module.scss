@@ -1,0 +1,12 @@
+.Item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+.DatasetName {
+    >:first-child {
+        margin-right: 5px;
+        margin-bottom: 3px;
+    }
+}

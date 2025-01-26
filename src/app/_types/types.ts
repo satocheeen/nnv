@@ -78,6 +78,9 @@ export type DbDefine = {
     nodeStyle?: string;  // ノードスタイル
     properties: Property[];
 }
+export type DbDefineWithRelation = DbDefine & {
+    relationColIds: string[]; // from-DBの場合、リレーション項目IDを設定する
+};
 
 export type Property = {
     id: string;

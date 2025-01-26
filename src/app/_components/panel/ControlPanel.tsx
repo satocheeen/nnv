@@ -22,6 +22,7 @@ import { Confirm } from '../Confirm';
 import { useAtom } from 'jotai';
 import Link from 'next/link';
 import useFilter, { filterAtom } from '@/app/_jotai/useFilter';
+import DatasetSelector from './DatasetSelector';
 
 export default function ControlPanel() {
     const { t } = useTranslation();
@@ -81,7 +82,7 @@ export default function ControlPanel() {
     return (
         <div className={`${styles.ControlArea} ${isSp ? styles.sp : styles.pc}`}>
             <div className={styles.Container + ' ' + (isOpen ? '' : styles.Close)}>
-                {/* <DatasetSelector /> */}
+                <DatasetSelector />
                 <Button onClick={onGetData} variant="outline-secondary" className={styles.Btn}>
                     <span>{t('Get_Data')}</span>
                     <BsFillCloudArrowDownFill />

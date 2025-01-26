@@ -26,6 +26,9 @@ export const alertDialogInfoAtom = atom<AlertDialogInfoType>({
     dialogParam: undefined,
 })
 
-export const loadingInfoAtom = atom({
+export const loadingInfoAtom = atom<{
+    loading: boolean;
+    status?: string;
+}>({
     loading: false,
 })
