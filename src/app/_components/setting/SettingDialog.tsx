@@ -12,7 +12,7 @@ import useSettingStore, { Step } from '@/app/_jotai/useSettingStore';
 import { Confirm } from '../Confirm';
 import styles from './SettingDialog.module.scss';
 import { useAtom } from 'jotai';
-import { dataSetsAtom } from '@/app/_jotai/data';
+import { dataSetsAtom } from '@/app/_jotai/useData';
 import useData from '@/app/_jotai/useData';
 import { useAtomCallback } from 'jotai/utils';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';

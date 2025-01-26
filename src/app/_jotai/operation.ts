@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { DbDefine, DialogParam } from "../_types/types";
-import { dataSetsAtom } from "./data";
+import { dataSetsAtom } from "./useData";
 
 export const visitedAtom = atom(false);
 export const currentDatasetIdAtom = atom<string|undefined>();

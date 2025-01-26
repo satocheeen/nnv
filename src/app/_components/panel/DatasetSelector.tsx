@@ -5,7 +5,7 @@ import { BsFillGearFill } from 'react-icons/bs';
 import styles from './DatasetSelector.module.scss';
 import useSettingStore from '@/app/_jotai/useSettingStore';
 import { useAtom } from 'jotai';
-import { dataSetsAtom } from '@/app/_jotai/data';
+import { dataSetsAtom } from '@/app/_jotai/useData';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import { useAtomCallback } from 'jotai/utils';
 import SettingDialog from '../setting/SettingDialog';

@@ -5,7 +5,7 @@ import styles from './SelectDatasetBody.module.scss';
 import { useTranslation } from 'react-i18next';
 import useSettingStore from '@/app/_jotai/useSettingStore';
 import { useAtom } from 'jotai';
-import { dataSetsAtom } from '@/app/_jotai/data';
+import { dataSetsAtom } from '@/app/_jotai/useData';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import { DataSet, DialogMode, DialogResult } from '@/app/_types/types';
 import useData from '@/app/_jotai/useData';

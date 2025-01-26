@@ -4,12 +4,14 @@ import useApi from "../_util/useApi";
 import { DataSet, DbData, DbDefine, DbDefineWithRelation, Edge, NetworkDefine, NodeItem, Property } from "@/app/_types/types";
 import { useAtomCallback } from "jotai/utils";
 import { currentDatasetAtom, loadingInfoAtom } from "./operation";
-import { dataSetsAtom } from "./data";
 import { isSameProperty } from "../_util/utility";
+import { atom } from "jotai";
 
 type NodeItemWithPosition = NodeItem & {
     position?: {x: number; y: number};
 }
+
+export const dataSetsAtom = atom<DataSet[]>([]);
 
 export default function useData() {
     const { t } = useTranslation();
