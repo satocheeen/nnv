@@ -25,7 +25,7 @@ export default function Graph() {
     const [ , setTempGuide ] = useAtom(tempGuideAtom);
     const [ , setLoadingInfo ] = useAtom(loadingInfoAtom);
     const { operatedGuide } = useGuide();
-    const { updatePosition } = useData();
+    const { updatePosition, createRelation } = useData();
     const [ createPageDialogTarget, setCreatePageDialogTarget ] = useState<CreatePageDialogTarget|null>(null);
 
     // Cytoscape初期化
@@ -72,7 +72,7 @@ export default function Graph() {
                 setCreatePageDialogTarget(args);
             },
             onRelationCreated(args) {
-                
+                createRelation(args)
             },
             onRelationRemoveed(args) {
                 
@@ -86,7 +86,8 @@ export default function Graph() {
             chartRef.current?.destroy();
             chartRef.current = null;
         }
-    }, [operatedGuide, setLoadingInfo, setTempGuide, updatePosition]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Datasetに変更が加わったら、チャート再描画
     useWatch(currentDataset, val => {

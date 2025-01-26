@@ -277,8 +277,6 @@ export default class Chart {
                 return {
                     content: this._param.t('Create_Page', {name: dbDef.name}),
                     select: () => {
-                        // this.operation.operatedGuide(GuideKind.CoreClick);
-                        // this.operation.showCreatePageDialog(dbDef, this.lastClickedPosition);
                         this._param.onCreatePageMenuClicked({
                             target: dbDef,
                             position: this.lastClickedPosition,
@@ -294,7 +292,6 @@ export default class Chart {
             {
                 content: '<span>' + this._param.t('Open_Notion', '') + '</span><img src="/notion-logo.png" width="40" alt="Notion Logo" />',
                 select: (element) => {
-                    // this.operation.operatedGuide(GuideKind.NodeClick);
                     this._param.guideController.operatedGuide(GuideKind.NodeClick);
                     this._openNotionPage(element.id());
                 },
@@ -418,14 +415,6 @@ export default class Chart {
 
         // リレーションを登録
         this._param.onRelationCreated(edgeInfo);
-        // try {
-        //     await this.dataHook.createRelation(edgeInfo);
-        // } catch(e) {
-        //     this.confirm({
-        //         mode: DialogMode.OkOnly,
-        //         message: this.t('Error_CreateRelation') + '\n' + e,
-        //     });
-        // }
     }
 
     async _removeRelation(edge: EdgeSingular) {

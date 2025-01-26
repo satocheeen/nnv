@@ -6,6 +6,7 @@ import { useAtomCallback } from "jotai/utils";
 import { currentDatasetAtom, loadingInfoAtom } from "./operation";
 import { isSameProperty } from "../_util/utility";
 import { atomWithStorage } from 'jotai/utils';
+import { Confirm } from "../_components/Confirm";
 
 type NodeItemWithPosition = NodeItem & {
     position?: {x: number; y: number};
@@ -566,13 +567,18 @@ export default function useData() {
                     datasetId: currentDataset.id,
                     edges: [edge],
                 })
+
+            } catch(e) {
+                Confirm.call({
+                    message: t('Error_CreateRelation') + '\n' + e,
+                })
     
             } finally {
                 set(loadingInfoAtom, {
                     loading: false,
                 })
                 }
-        }, [addEdges, api])
+        }, [addEdges, api, t])
     
     ) 
 
