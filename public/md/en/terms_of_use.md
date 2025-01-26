@@ -64,7 +64,7 @@ In amending the Terms of Use in accordance with the preceding paragraph, we will
 
 ## 9.  Personal Information
 
-We handles personal information obtained through the use of this service appropriately in accordance with our ["Privacy Policy"](https://nnv.satocheeen.com/privacy-policy).
+We handles personal information obtained through the use of this service appropriately in accordance with our ["Privacy Policy"](/privacy-policy).
 
 ## 10. Notification
 
