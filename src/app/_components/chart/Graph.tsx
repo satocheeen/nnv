@@ -21,6 +21,7 @@ export default function Graph() {
 
     // Cytoscape初期化
     useEffect(() => {
+        console.log('Cytoscape初期化')
         if (myRef.current === null) {
             console.warn('CytoscapeRef要素が見つかりません');
             return;
@@ -90,7 +91,7 @@ export default function Graph() {
         chartRef.current?.setFilter(filter);
     }, [filter, currentDataset?.dataMap]);
 
-    if (!currentDataset) return null;
+    // if (!currentDataset) return null;
     return (
         <div className={styles.Container}>
             <div ref={myRef} className={styles.Chart} />

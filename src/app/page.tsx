@@ -1,4 +1,4 @@
-import styles from "./page.module.css";
+import styles from "./page.module.scss";
 import Graph from "./_components/chart/Graph";
 import ControlPanel from "./_components/panel/ControlPanel";
 
