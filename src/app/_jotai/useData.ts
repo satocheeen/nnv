@@ -11,9 +11,7 @@ type NodeItemWithPosition = NodeItem & {
     position?: {x: number; y: number};
 }
 
-export const dataSetsAtom = atomWithStorage<DataSet[]>('dataSets', [], undefined, {
-    getOnInit: true,
-});
+export const dataSetsAtom = atomWithStorage<DataSet[]>('dataSets', []);
 
 export default function useData() {
     const { t } = useTranslation();

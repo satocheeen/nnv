@@ -1,9 +1,10 @@
 import { atom } from "jotai";
 import { DbDefine, DialogParam } from "../_types/types";
 import { dataSetsAtom } from "./useData";
+import { atomWithStorage } from "jotai/utils";
 
 export const visitedAtom = atom(false);
-export const currentDatasetIdAtom = atom<string|undefined>();
+export const currentDatasetIdAtom = atomWithStorage<string|undefined>('currentDatasetId', undefined);
 
 export const currentDatasetAtom = atom((get) => {
     const currentDatasetId = get(currentDatasetIdAtom);
