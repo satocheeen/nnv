@@ -1,6 +1,6 @@
 import { atom } from "jotai";
-import { Guide, GuideKind, TempGuide } from "../_types/types";
-import { useAtomCallback } from "jotai/utils";
+import { Guide, GuideKind, TempGuide } from "../../_types/types";
+import { atomWithStorage, useAtomCallback } from "jotai/utils";
 import { useCallback } from "react";
 
 const initGuides = Object.keys(GuideKind).map((kind) => {
@@ -9,7 +9,7 @@ const initGuides = Object.keys(GuideKind).map((kind) => {
         operationed: false,
     }
 });
-export const guidesAtom = atom<Guide[]>(initGuides);
+export const guidesAtom = atomWithStorage<Guide[]>('guides', initGuides);
 
 export const tempGuideAtom = atom<TempGuide|undefined>();
 

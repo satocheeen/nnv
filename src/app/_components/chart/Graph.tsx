@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import styles from './Graph.module.scss';
 import Chart from './Chart';
 import { t } from 'i18next';
-import useGuide, { tempGuideAtom } from '@/app/_jotai/useGuide';
+import useGuide, { tempGuideAtom } from '@/app/_components/guide/useGuide';
 import { DbDefine, GuideKind } from '@/app/_types/types';
 import { filterAtom } from '@/app/_jotai/useFilter';
 import useData from '@/app/_jotai/useData';

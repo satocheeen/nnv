@@ -1,0 +1,13 @@
+.GuideArea {
+    position: absolute;
+    z-index: 10;
+
+    &.sp {
+        right: 0;
+    }
+}
+.CancelBtnArea {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}

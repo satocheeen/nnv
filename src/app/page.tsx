@@ -10,6 +10,7 @@ import ControlPanel from "./_components/panel/ControlPanel";
 import { Spinner } from "react-bootstrap";
 import { useAtom } from "jotai";
 import { loadingInfoAtom } from "./_jotai/operation";
+import Guide from "./_components/guide/Guide";
 
 export default function Home() {
     const { hasData } = useSettingStore();
@@ -32,20 +33,18 @@ export default function Home() {
     useEffect(() => {
         // storageからの値読み込みが完了するのを待つ
         setTimeout(checkShowSettingDialog, 500)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const [ loadingInfo ] = useAtom(loadingInfoAtom);
 
     return (
         <div>
-            {/* <Guide /> */}
+            <Guide />
             <div className={styles.Graph}>
                 <Graph />
             </div>
             <ControlPanel />
-            {/* {createPageDialogTarget &&
-                <CreatePageDialog show={showCreatePageDialog} onHide={onCreatePageDialogHide} target={createPageDialogTarget}/>
-            } */}
             {loadingInfo.loading &&
                 <div className={styles.SpinnerOverlay}>
                     <div className={styles.GraphSpinner}>
