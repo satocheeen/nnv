@@ -8,9 +8,9 @@ import lang from './_define/lang';
 // クライアントコンポーネントとして定義する必要があるものを、
 // layout.tsxの外に切り出している
 
-const detector = new LanguageDetector(null, {
+  const detector = new LanguageDetector(null, {
   order: ['querystring', 'cookie',  'navigator', 'localStorage', 'htmlTag'],
-  htmlTag: document.documentElement,
+  htmlTag: typeof document !== 'undefined' ? document.documentElement : undefined,
 });
 i18n
   .use(detector)

@@ -14,12 +14,6 @@ import { RemoveRelationParam } from "../api/remove_relation/types";
 
 const oAuthInfosAtom = atom<NotionOauth[]>([]);
 
-type ApiInput = {
-    token: string;
-    action: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    params?: any;
-}
 type ApiResult<RESULT> = {
     result: 'ok' | 'error';
     data?: RESULT;
@@ -90,11 +84,10 @@ export default function useApi() {
             throw new Error('not found token');
         }
 
-        const result = await axios.post('/api/action', {
+        const result = await axios.post(`/api/${action}`, {
             token,
-            action,
             params,
-        } as ApiInput);
+        });
         const apiRes = result.data as ApiResult<RESULT>;
         if (apiRes.result === "error") {
             console.warn(apiRes.message);
