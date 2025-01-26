@@ -25,7 +25,7 @@ export default function Graph() {
     const [ , setTempGuide ] = useAtom(tempGuideAtom);
     const [ , setLoadingInfo ] = useAtom(loadingInfoAtom);
     const { operatedGuide } = useGuide();
-    const { updatePosition, createRelation } = useData();
+    const { updatePosition, createRelation, removeRelation } = useData();
     const [ createPageDialogTarget, setCreatePageDialogTarget ] = useState<CreatePageDialogTarget|null>(null);
 
     // Cytoscape初期化
@@ -75,7 +75,7 @@ export default function Graph() {
                 createRelation(args)
             },
             onRelationRemoveed(args) {
-                
+                removeRelation(args);
             },
             onError(msg) {
                 

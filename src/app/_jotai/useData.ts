@@ -4,7 +4,7 @@ import useApi from "../_util/useApi";
 import { DataSet, DbData, DbDefine, DbDefineWithRelation, Edge, NetworkDefine, NodeItem, Property } from "@/app/_types/types";
 import { useAtomCallback } from "jotai/utils";
 import { currentDatasetAtom, loadingInfoAtom } from "./operation";
-import { isSameProperty } from "../_util/utility";
+import { isSamePair, isSameProperty } from "../_util/utility";
 import { atomWithStorage } from 'jotai/utils';
 import { Confirm } from "../_components/Confirm";
 
@@ -234,7 +234,7 @@ export default function useData() {
 
             const newEdges = currentDataset.edges.filter(edge => {
                 const isDelTarget = payload.edges.some(delEdge => {
-                    return Object.is(edge.def, delEdge.def)
+                    return isSamePair(edge.def, delEdge.def)
                             && edge.from === delEdge.from
                             && edge.to === delEdge.to;
                 });
@@ -603,13 +603,18 @@ export default function useData() {
                     datasetId: currentDataset.id,
                     edges: [edge],
                 })
+
+            } catch(e) {
+                Confirm.call({
+                message: t('Error_RemoveRelation') + '\n' + e,
+            })
     
             } finally {
                 set(loadingInfoAtom, {
                     loading: false,
                 })
             }
-        }, [api, removeEdges])
+        }, [api, removeEdges, t])
     ) 
 
     const createPage = useAtomCallback(

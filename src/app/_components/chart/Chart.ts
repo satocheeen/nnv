@@ -418,27 +418,14 @@ export default class Chart {
     }
 
     async _removeRelation(edge: EdgeSingular) {
-        try {
-            const from = edge.source().id();
-            const to = edge.target().id();
-            const def = edge.data('def');
-            this._param.onRelationRemoveed({
-                def,
-                from,
-                to,
-            })
-            // await this.dataHook.removeRelation({
-            //     def,
-            //     from,
-            //     to,
-            // });
-        } catch (e) {
-            this._param.onError(this._param.t('Error_RemoveRelation') + '\n' + e);
-            // this.confirm({
-            //     mode: DialogMode.OkOnly,
-            //     message: this.t('Error_RemoveRelation') + '\n' + e,
-            // });
-        }
+        const from = edge.source().id();
+        const to = edge.target().id();
+        const def = edge.data('def');
+        this._param.onRelationRemoveed({
+            def,
+            from,
+            to,
+        })
     }
 
     redraw() {
