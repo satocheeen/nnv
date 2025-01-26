@@ -26,12 +26,12 @@ export default function RootLayout({
 }>) {
     return (
         <html>
-            <body className={`${geistSans.variable} ${geistMono.variable}`}>
+            {/* <body className={`${geistSans.variable} ${geistMono.variable}`}> */}
                 <CcSettingProvider>
                     {children}
+                    <div className={styles.Footer}>presented by Satocheeen.com</div>
                 </CcSettingProvider>
-                <div className={styles.Footer}>presented by Satocheeen.com</div>
-            </body>
+            {/* </body> */}
         </html>
     );
 }

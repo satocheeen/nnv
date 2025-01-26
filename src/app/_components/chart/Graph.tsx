@@ -12,6 +12,7 @@ import { filterAtom } from '@/app/_jotai/useFilter';
 import useData from '@/app/_jotai/useData';
 import { useWatch } from '@/app/_util/useWatch';
 import CreatePageDialog from '../CreatePageDialog';
+import { Confirm } from '../Confirm';
 
 type CreatePageDialogTarget = {
     target: DbDefine;
@@ -78,7 +79,9 @@ export default function Graph() {
                 removeRelation(args);
             },
             onError(msg) {
-                
+                Confirm.call({
+                    message: msg,
+                })
             },
         });
 

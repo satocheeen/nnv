@@ -9,25 +9,25 @@ import { SettingDialog } from './_components/setting/SettingDialog';
 // クライアントコンポーネントとして定義する必要があるものを、
 // layout.tsxの外に切り出している
 
-  const detector = new LanguageDetector(null, {
-  order: ['querystring', 'cookie',  'navigator', 'localStorage', 'htmlTag'],
-  htmlTag: typeof document !== 'undefined' ? document.documentElement : undefined,
+const detector = new LanguageDetector(null, {
+    order: ['querystring', 'cookie',  'navigator', 'localStorage', 'htmlTag'],
+    htmlTag: typeof document !== 'undefined' ? document.documentElement : undefined,
 });
 i18n
-  .use(detector)
-  .use(initReactI18next)
-  .init({
-      resources: lang,
-      // lng: 'en',
-  });
+    .use(detector)
+    .use(initReactI18next)
+    .init({
+        resources: lang,
+        // lng: 'en',
+    });
 console.log('lang', i18n.language);
 
 export default function CcSettingProvider({ children }: React.PropsWithChildren) {
     return (
-        <>
+        <body onContextMenu={evt=>evt.preventDefault()}>
             <Confirm.Root />
             <SettingDialog.Root />
             {children}
-        </>
+        </body>
     );
 }
