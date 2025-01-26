@@ -1,0 +1,28 @@
+@import '@/app/_styles/global.scss';
+
+.DbName {
+    font-size: 120%;
+    font-weight: bold;
+}
+.Item {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 5px;
+    border: 1px solid $dark-color-50;
+    float: left;
+    cursor: pointer;
+
+    font-size: 48px;
+    color: $primary-color;
+
+    &.selected {
+        border: 3px solid $primary-color;
+    }
+
+    &:hover {
+        background-color: rgba($primary-color, 0.2);
+    }
+}

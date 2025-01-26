@@ -2,7 +2,7 @@
 "use client"
 import { currentDatasetAtom, loadingInfoAtom } from '@/app/_jotai/operation';
 import { useAtom } from 'jotai';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styles from './Graph.module.scss';
 import Chart from './Chart';
 import { t } from 'i18next';
@@ -10,8 +10,6 @@ import useGuide, { tempGuideAtom } from '@/app/_jotai/useGuide';
 import { GuideKind } from '@/app/_types/types';
 import { filterAtom } from '@/app/_jotai/useFilter';
 import useData from '@/app/_jotai/useData';
-import { addEventListener, removeEventListener, Event } from '@/app/_util/EventController';
-import { useAtomCallback } from 'jotai/utils';
 import { useWatch } from '@/app/_util/useWatch';
 
 export default function Graph() {

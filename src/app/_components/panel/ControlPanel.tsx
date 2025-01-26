@@ -24,6 +24,7 @@ import Link from 'next/link';
 import useFilter, { filterAtom } from '@/app/_jotai/useFilter';
 import DatasetSelector from './DatasetSelector';
 import useData from '@/app/_jotai/useData';
+import StyleSettingDialog from '../style-setting/StyleSettingDialog';
 
 export default function ControlPanel() {
     const { t } = useTranslation();
@@ -72,9 +73,9 @@ export default function ControlPanel() {
         setShowStyleSettingDialog(true);
     }, []);
 
-    // const onHideStyleSettingDialog = useCallback(() => {
-    //     setShowStyleSettingDialog(false);
-    // }, []);
+    const onHideStyleSettingDialog = useCallback(() => {
+        setShowStyleSettingDialog(false);
+    }, []);
 
     const [isOpen, setOpen] = useState(false);
     const onToggleBtnClicked = useCallback(() => {
@@ -94,7 +95,7 @@ export default function ControlPanel() {
                     <span>{t('Style_Setting')}</span>
                     <MdOutlineDesignServices />
                 </Button>
-                {/* <StyleSettingDialog show={showStyleSettingDialog} onHide={onHideStyleSettingDialog} /> */}
+                <StyleSettingDialog show={showStyleSettingDialog} onHide={onHideStyleSettingDialog} />
 
                 <Button onClick={onReLayout} variant="outline-secondary" className={styles.Btn}>
                     <span>{t('ReLayout')}</span>
