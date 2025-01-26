@@ -78,15 +78,12 @@ export default function Graph() {
             chartRef.current?.destroy();
             chartRef.current = null;
         }
-    }, [operatedGuide, setLoadingInfo, setTempGuide]);
+    }, [operatedGuide, setLoadingInfo, setTempGuide, updatePosition]);
 
     useEffect(() => {
-        if (!currentDataset) {
-            return;
-        }
-        chartRef.current?.setDataset(currentDataset);
+        chartRef.current?.setDataset(currentDataset ?? null);
         chartRef.current?.redraw();
-    }, [currentDataset, currentDataset?.dataMap, currentDataset?.edges]);
+    }, [currentDataset]);
 
     useEffect(() => {
         // 表示非表示を切り替え

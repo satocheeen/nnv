@@ -29,7 +29,7 @@ export default function Home() {
     useEffect(() => {
         // storageからの値読み込みが完了するのを待つ
         setTimeout(checkShowSettingDialog, 500)
-    }, [checkShowSettingDialog]);
+    }, []);
 
     return (
         <div>

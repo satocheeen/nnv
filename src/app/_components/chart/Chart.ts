@@ -240,12 +240,15 @@ export default class Chart {
         this.cy.destroy();
     }
 
-    setDataset(dataset: DataSet) {
-        if (this.dataset?.id !== dataset.id) {
+    setDataset(dataset: DataSet | null) {
+        if (dataset === null || this.dataset?.id !== dataset.id) {
             this.cy.elements().remove();
         }
 
         this.dataset = dataset;
+
+        if (dataset===null) return;
+
         this.items = Object.values(dataset.dataMap).reduce((acc, cur) => {
             return acc.concat(cur.items);
         }, [] as NodeItem[]);
@@ -341,7 +344,7 @@ export default class Chart {
                 activeFillColor: 'rgba(10,10,150,0.5)',
                 commands,
             });
-        });
+        }) ?? [];
     }
 
     _openNotionPage(id: string) {

@@ -106,7 +106,6 @@ export default function useApi() {
             // アクセス可能な全てのワークスペースのDB一覧を取得する
             const oAuthInfos = get(myOAuthInfosAtom);
             for (const oAuthInfo of oAuthInfos) {
-                console.log('getDbList', oAuthInfo);
                 const dbInfos = await apiAction<DbInfo[]>('get_dblist', undefined, oAuthInfo.workspace_id);
                 if (dbInfos.length === 0) {
                     continue;
