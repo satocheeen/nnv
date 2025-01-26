@@ -1,3 +1,4 @@
+"use client"
 import { createCallable } from 'react-call'
 import { Button, Modal } from 'react-bootstrap';
 import styles from './Confirm.module.scss'

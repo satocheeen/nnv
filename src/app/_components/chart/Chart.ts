@@ -7,7 +7,7 @@ import { TFunction } from 'i18next';
 import { DataSet, Edge, NodeItem, RelationDefineKey, Filter, GuideKind, TempGuideKind, DbDefine } from '../../_types/types';
 import * as EventController from '../../_util/EventController';
 import { getEdgeKey, getRelationKey } from '../../_util/utility';
-import notionLogo from '../../assets/notion-logo.png';
+import notionLogo from '../../_assets/notion-logo.png';
 import { Colors } from '@/app/_util/const';
 
 cytoscape.use(cycxtmenu);
