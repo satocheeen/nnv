@@ -1,8 +1,16 @@
 import { atom } from "jotai";
-import { DbDefine, DialogParam, Filter, Guide, GuideKind, TempGuide } from "../_types/types";
+import { DbDefine, DialogParam, Filter } from "../_types/types";
+import { dataSetsAtom } from "./data";
 
 export const visitedAtom = atom(false);
 export const currentDatasetIdAtom = atom<string|undefined>();
+
+export const currentDatasetAtom = atom((get) => {
+    const currentDatasetId = get(currentDatasetIdAtom);
+    const datasets = get(dataSetsAtom);
+    return datasets.find(ds => ds.id === currentDatasetId);
+})
+
 export const filterAtom = atom<Filter>({
     categories: {},
     keywords: [],
@@ -21,16 +29,6 @@ export const alertDialogInfoAtom = atom<AlertDialogInfoType>({
     show: false,
     dialogParam: undefined,
 })
-
-const initGuides = Object.keys(GuideKind).map((kind) => {
-    return {
-        kind: kind as GuideKind,
-        operationed: false,
-    }
-});
-export const guidesAtom = atom<Guide[]>(initGuides);
-
-export const tempGuideAtom = atom<TempGuide|undefined>();
 
 export const loadingInfoAtom = atom({
     loading: false,

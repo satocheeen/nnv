@@ -9,10 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/cytoscape": "^3.21.8",
+    "@types/cytoscape-cxtmenu": "^3.4.4",
+    "@types/cytoscape-edgehandles": "^4.0.4",
+    "cytoscape": "^3.31.0",
+    "cytoscape-cxtmenu": "^3.5.0",
+    "cytoscape-edgehandles": "^4.0.1",
+    "i18next": "^24.2.1",
     "jotai": "^2.11.1",
     "next": "15.1.6",
     "react": "^19.0.0",
+    "react-bootstrap": "^2.10.8",
+    "react-call": "^1.7.0",
     "react-dom": "^19.0.0",
+    "react-i18next": "^15.4.0",
     "sass": "^1.83.4"
   },
   "devDependencies": {

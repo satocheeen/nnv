@@ -1,3 +1,5 @@
+import { Colors } from "../_util/const";
+
 /**
  * 操作説明
  * lang.tsのGuide_XXXXが対応する
@@ -59,7 +61,7 @@ export type DataSet = {
 export type OptionItem = {
     id: string;
     name: string;
-    color: string;
+    color: keyof (typeof Colors);
 }
 
 // ネットワーク定義

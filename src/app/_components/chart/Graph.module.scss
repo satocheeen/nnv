@@ -1,0 +1,14 @@
+.Container {
+    position: relative;
+    // border: blue 1px solid;
+    height: 100%;
+    width: 100%;
+}
+.Chart {
+    position: absolute;
+    top: 0;
+    left: 0;
+    // border: red 1px solid;
+    height: 100%;
+    width: 100%;
+}
