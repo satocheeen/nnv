@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { DbDefine, NetworkDefine } from '@/app/_types/types';
 import { Button, ListGroup, ListGroupItem, Modal } from 'react-bootstrap';
