@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import './_styles/index.scss';
-import ConfirmProvider from "./ConfirmProvider";
+import CcSettingProvider from "./CcSettingProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   description: "リレーション項目で繋がった複数のNotionデータベースの関連を可視化します。Visualizes the relations of your Notion’s pages connected with other pages by relational properties.",
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,8 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-        <ConfirmProvider />
+        <CcSettingProvider>
+          {children}
+        </CcSettingProvider>
       </body>
     </html>
   );
