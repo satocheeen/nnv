@@ -297,7 +297,8 @@ export default function useData() {
         }, [replaceDataSet])
     )
 
-    const loadData = useAtomCallback(
+    // 1DBのデータ読み込み
+    const loadDbData = useAtomCallback(
         useCallback(async(get, set, dbDefine: DbDefineWithRelation) => {
             const currentDataset= get(currentDatasetAtom);
             if (!currentDataset) {
@@ -458,7 +459,7 @@ export default function useData() {
      * 最新のデータ取得
      * @returns 
      */
-    const getData = useAtomCallback(
+    const loadLatestData = useAtomCallback(
         useCallback(async(get, set) => {
             const currentDataset= get(currentDatasetAtom);
             if (!currentDataset) {
@@ -473,7 +474,7 @@ export default function useData() {
                         loading: true,
                         status,
                     })
-                    await loadData(def);
+                    await loadDbData(def);
                 } catch(e) {
                     console.warn('データ取得エラー', JSON.parse(JSON.stringify(dbDefine)), e);
                     throw e;
@@ -484,7 +485,7 @@ export default function useData() {
                 }
             }
     
-        }, [createDbDefineWithRelation, loadData, t])
+        }, [createDbDefineWithRelation, loadDbData, t])
     )
 
     const updateItemImageBase64 = useAtomCallback(
@@ -744,7 +745,7 @@ export default function useData() {
     )
 
     return {
-        getData,
+        loadLatestData,
         getThumb,
         createRelation,
         removeRelation,

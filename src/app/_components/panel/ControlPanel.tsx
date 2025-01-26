@@ -23,6 +23,7 @@ import { useAtom } from 'jotai';
 import Link from 'next/link';
 import useFilter, { filterAtom } from '@/app/_jotai/useFilter';
 import DatasetSelector from './DatasetSelector';
+import useData from '@/app/_jotai/useData';
 
 export default function ControlPanel() {
     const { t } = useTranslation();
@@ -30,15 +31,16 @@ export default function ControlPanel() {
         orientation: 'portrait',
     });
 
+    const { loadLatestData } = useData();
     const onGetData = useCallback(async() => {
         try {
-            // await dataHook.getData();
+            await loadLatestData();
         } catch (e) {
             Confirm.call({
                 message: t('Error_GetData') + '\n' + e,
             });
         }
-    }, [t]);
+    }, [loadLatestData, t]);
 
     const onReLayout = useCallback(() => {
         EventController.fireEvent(EventController.Event.ChartReLayout);

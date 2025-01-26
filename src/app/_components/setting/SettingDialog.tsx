@@ -25,7 +25,7 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
     const [ datasets ] = useAtom(dataSetsAtom);
     const { t } = useTranslation();
     const { getDbList, hasToken, oAuth } = useApi();
-    const { getData, createDataset, updateNetworkDefine } = useData();
+    const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
 
     const onHide = useCallback(() => {
         initialize();
