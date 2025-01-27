@@ -1,7 +1,7 @@
 import axios from "axios";
 import { NotionOauth, Property } from "../_types/types"
 import { useCallback } from "react";
-import { atom, useAtom } from "jotai";
+import { atom } from "jotai";
 import { currentDatasetAtom } from "../_jotai/operation";
 import { DbInfo, WorkspaceInfo } from "../api/get_dblist/types";
 import { GetOptionsParam, GetOptionsResult } from "../api/get_options/types";
@@ -11,29 +11,39 @@ import { GetDeletedParam, GetDeletedResult } from "../api/get_deleted/types";
 import { CreatePageParam, CreatePageResult } from "../api/create_page/types";
 import { CreateRelationParam, CreateRelationResult } from "../api/create_relation/types";
 import { RemoveRelationParam } from "../api/remove_relation/types";
-import { useAtomCallback } from "jotai/utils";
+import { atomWithStorage, useAtomCallback } from "jotai/utils";
 import { NotionOAuthRedirectUri } from "../api/common";
 
-export const oAuthInfosAtom = atom<NotionOauth[]>([]);
-const myOAuthInfosAtom = atom((get) => {
-    if (process.env.NEXT_PUBLIC_DEVELOPER_MODE==='true') {
-        return [{
-            access_token: '',
-            workspace_id: '',
-        } as NotionOauth];
+type NotionOAuthInfo = {
+    type: 'public';
+    oAuths: NotionOauth[];
+} | {
+    type: 'internal';
+}
+export const oAuthInfosAtom = atomWithStorage<NotionOauth[]>('notionOAuths', []);
+const myOAuthInfosAtom = atom<NotionOAuthInfo>((get) => {
+    if (process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID) {
+        // publicの場合
+        const oAuths = get(oAuthInfosAtom);
+        return {
+            type: 'public',
+            oAuths,
+        }
+    } else {
+        // internalの場合
+        return {
+            type: 'internal'
+        }
     }
-    const originalOAuthInfos = get(oAuthInfosAtom);
-    return originalOAuthInfos;
 })
-const hasTokenAtom = atom((get) => {
+
+export const hasTokenAtom = atom((get) => {
     const oAuthInfos = get(myOAuthInfosAtom);
-    return oAuthInfos.length > 0;
+    if (oAuthInfos.type === 'internal') return true;
+    return oAuthInfos.oAuths.length > 0;
 })
 
-console.log('process.env.NEXT_PUBLIC_DEVELOPER_MODE', process.env.NEXT_PUBLIC_DEVELOPER_MODE)
 export default function useApi() {
-    const [ hasToken ] = useAtom(hasTokenAtom);
-
     /**
      * Notion認証を行う
      */
@@ -43,11 +53,7 @@ export default function useApi() {
         url += `&redirect_uri=${NotionOAuthRedirectUri}`;
         url += '&response_type=code';
         url += '&owner=user';
-        if (process.env.NEXT_PUBLIC_DEVELOPER_MODE === 'true') {
-            url += '&state=dev';
-        }
         document.location.href = url;
-
     }, []);
     
     /**
@@ -58,11 +64,12 @@ export default function useApi() {
         useCallback((get, set, workspaceId?: string): string | undefined => {
             const currentDataset = get(currentDatasetAtom);
             const oAuthInfos = get(myOAuthInfosAtom);
+            if (oAuthInfos.type === 'internal') return;
             const wpId = workspaceId ? workspaceId : currentDataset?.networkDefine.workspaceId;
             if (!wpId) {
                 return undefined;
             }
-            const token = oAuthInfos.find(info => info.workspace_id === wpId)?.access_token;
+            const token = oAuthInfos.oAuths.find(info => info.workspace_id === wpId)?.access_token;
             return token;
         }, [])
     )
@@ -78,7 +85,8 @@ export default function useApi() {
     const apiAction = useCallback(async<RESULT>(action: string, params: any, workspaceId?: string): Promise<RESULT> => {
         // アクセストークン用意
         const token = getToken(workspaceId);
-        if (token === undefined && !process.env.NEXT_PUBLIC_DEVELOPER_MODE) {
+        if (token === undefined && process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID) {
+            // TODO: トークン取得
             throw new Error('not found token');
         }
 
@@ -100,8 +108,26 @@ export default function useApi() {
             const resultList = [] as WorkspaceInfo[];
             // アクセス可能な全てのワークスペースのDB一覧を取得する
             const oAuthInfos = get(myOAuthInfosAtom);
-            for (const oAuthInfo of oAuthInfos) {
-                const dbInfos = await apiAction<DbInfo[]>('get_dblist', undefined, oAuthInfo.workspace_id);
+
+            const workspaceInfos = (() => {
+                if (oAuthInfos.type === 'internal') {
+                    return [
+                        {
+                            workspace_id: undefined,
+                            workspace_name: undefined,
+                        }
+                    ]
+                } else {
+                    return oAuthInfos.oAuths.map(item => {
+                        return {
+                            workspace_id: item.workspace_id,
+                            workspace_name: item.workspace_name,
+                        }
+                    })
+                }
+            })();
+            for (const wk of workspaceInfos) {
+                const dbInfos = await apiAction<DbInfo[]>('get_dblist', undefined, wk.workspace_id);
                 if (dbInfos.length === 0) {
                     continue;
                 }
@@ -133,8 +159,8 @@ export default function useApi() {
                 });
     
                 resultList.push({
-                    workspaceId: oAuthInfo.workspace_id,
-                    workspaceName: oAuthInfo.workspace_name,
+                    workspaceId: wk.workspace_id ?? '',
+                    workspaceName: wk.workspace_name ?? '',
                     dbDefines,
                 });
             }
@@ -183,7 +209,8 @@ export default function useApi() {
     const getImage = useCallback(async(id: string) => {
         // アクセストークン用意
         const token = getToken();
-        if (token === undefined && !process.env.NEXT_PUBLIC_DEVELOPER_MODE) {
+        if (token === undefined && process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID) {
+            // TODO: トークン取得
             throw new Error('not found token');
         }
 
@@ -196,7 +223,6 @@ export default function useApi() {
     }, [getToken]);
 
     return {
-        hasToken,
         oAuth,
         getDbList,
         getOptions,

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal, Spinner } from 'react-bootstrap';
-import useApi from '@/app/_util/useApi';
+import useApi, { hasTokenAtom } from '@/app/_util/useApi';
 import { useTranslation } from 'react-i18next';
 import * as EventController from '@/app/_util/EventController';
 import { WorkspaceInfo } from '@/app/api/get_dblist/types';
@@ -24,7 +24,8 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
     const [workspaceList, setWorkspaceList] = useState([] as WorkspaceInfo[]);
     const [ datasets ] = useAtom(dataSetsAtom);
     const { t } = useTranslation();
-    const { getDbList, hasToken, oAuth } = useApi();
+    const { getDbList, oAuth } = useApi();
+    const [ hasToken ] = useAtom(hasTokenAtom);
     const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
 
     const onHide = useCallback(() => {
