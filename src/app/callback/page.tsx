@@ -16,8 +16,6 @@ export default async function CallbackPage({
      };
 }) {
     const { code, state } = await searchParams;
-    console.log('code', code)
-    console.log('state', state)
 
     if (code === undefined) {
         return (
@@ -39,7 +37,6 @@ export default async function CallbackPage({
             }
         });
         oAuthInfo = result.data as NotionOauth;
-        console.log('token', oAuthInfo)
     
     } catch(e) {
         console.warn('failed get token', e)

@@ -216,7 +216,6 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                     console.warn('想定外')
                     return null;
                 }
-                console.log('workData', workData)
                 return <SelectDatabaseBody
                         onNext={handleNextSelectDatabase}
                         onBack={onBack}

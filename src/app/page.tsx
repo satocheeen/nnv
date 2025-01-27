@@ -33,20 +33,17 @@ export default function Home() {
             const oAuthRedirectState = get(oAuthRedirectStateAtom);
             if (oAuthRedirectState?.state === 'select-database') {
                 // 設定画面を開く
-                console.log('open1')
                 settingDlgPromise = SettingDialog.call({
                     datasetId: oAuthRedirectState.datasetId,
                 });
                 set(oAuthRedirectStateAtom, undefined);
                 await settingDlgPromise;
-                console.log('reset state');
                 settingDlgPromise = null;
                 return;
             }
             const datasets = get(dataSetsAtom);
             if (datasets.length === 0 && settingDlgPromise === null) {
                 // データセットが存在しない場合も、設定画面を開く
-                console.log('open2')
                 SettingDialog.call({
                     datasetId: 'new',
                 });

@@ -101,7 +101,7 @@ export default function useApi() {
         const token = getToken(workspaceId);
         if (token === undefined && process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID) {
             // TODO: トークン取得
-            console.log('not find token')
+            console.warn('not find token')
             throw new Error(t('Getting_Access_Token'));
         }
 
