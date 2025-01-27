@@ -22,12 +22,16 @@ i18n
     });
 console.log('lang', i18n.language);
 
-export default function CcSettingProvider({ children }: React.PropsWithChildren) {
+if (typeof document !== 'undefined') {
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    })
+}
+export default function CcSettingProvider() {
     return (
-        <body onContextMenu={evt=>evt.preventDefault()}>
+        <>
             <Confirm.Root />
             <SettingDialog.Root />
-            {children}
-        </body>
+        </>
     );
 }

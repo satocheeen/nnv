@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import './_styles/index.scss';
 import CcSettingProvider from "./CcSettingProvider";
 import styles from './layout.module.scss';
-
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
     title: "Notion Network Viewer",
@@ -26,12 +15,11 @@ export default function RootLayout({
 }>) {
     return (
         <html>
-            {/* <body className={`${geistSans.variable} ${geistMono.variable}`}> */}
-                <CcSettingProvider>
-                    {children}
-                    <div className={styles.Footer}>presented by Satocheeen.com</div>
-                </CcSettingProvider>
-            {/* </body> */}
+            <body>
+                <CcSettingProvider />
+                {children}
+                <div className={styles.Footer}>presented by Satocheeen.com</div>
+            </body>
         </html>
     );
 }
