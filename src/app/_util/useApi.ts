@@ -12,8 +12,9 @@ import { CreatePageParam, CreatePageResult } from "../api/create_page/types";
 import { CreateRelationParam, CreateRelationResult } from "../api/create_relation/types";
 import { RemoveRelationParam } from "../api/remove_relation/types";
 import { useAtomCallback } from "jotai/utils";
+import { NotionOAuthRedirectUri } from "../api/common";
 
-const oAuthInfosAtom = atom<NotionOauth[]>([]);
+export const oAuthInfosAtom = atom<NotionOauth[]>([]);
 const myOAuthInfosAtom = atom((get) => {
     if (process.env.NEXT_PUBLIC_DEVELOPER_MODE==='true') {
         return [{
@@ -29,12 +30,6 @@ const hasTokenAtom = atom((get) => {
     return oAuthInfos.length > 0;
 })
 
-type ApiResult<RESULT> = {
-    result: 'ok' | 'error';
-    data?: RESULT;
-    message?: string;
-}
-
 console.log('process.env.NEXT_PUBLIC_DEVELOPER_MODE', process.env.NEXT_PUBLIC_DEVELOPER_MODE)
 export default function useApi() {
     const [ hasToken ] = useAtom(hasTokenAtom);
@@ -44,8 +39,8 @@ export default function useApi() {
      */
     const oAuth = useCallback(() => {
         let url = 'https://api.notion.com/v1/oauth/authorize?';
-        url += 'client_id=ef9ba1e2-4acb-4740-a99b-7e015c1b6cf8';
-        url += '&redirect_uri=https://nnv.satocheeen.com/callback/';
+        url += `client_id=${process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID}`;
+        url += `&redirect_uri=${NotionOAuthRedirectUri}`;
         url += '&response_type=code';
         url += '&owner=user';
         if (process.env.NEXT_PUBLIC_DEVELOPER_MODE === 'true') {
@@ -215,14 +210,3 @@ export default function useApi() {
     } 
 }
 
-export async function apiOAuth(code: string): Promise<NotionOauth> {
-    const result = await axios.post('/api/oauth', {
-        code,
-    });
-    const apiRes = result.data as ApiResult<NotionOauth>;
-    if (apiRes.result === "error") {
-        console.warn(apiRes.message);
-        throw apiRes.message;
-    }
-    return apiRes.data as NotionOauth;
-}
