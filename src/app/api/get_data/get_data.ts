@@ -61,9 +61,6 @@ export const createItem = async(define: DbDefineWithRelation, page: PageObjectRe
     const urlPropertyValue = {} as {[propertyId: string]: string};
 
     define.properties.forEach(defProp => {
-        if(!defProp.isUse) {
-            return;
-        }
         const targetProperty = Object.values(page.properties).find(prop => prop.id === defProp.id);
         if (targetProperty?.type === 'select') {
             const category = targetProperty.select;

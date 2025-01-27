@@ -315,7 +315,7 @@ export default class Chart {
             }
         ] as Command[];
         this.nodeMenues = this.dataset?.networkDefine.dbList.map(db => {
-            const urlProp = db.properties.filter(p => p.type === 'url' && p.isUse);
+            const urlProp = db.properties.filter(p => p.type === 'url');
             const commands = urlProp.reduce((acc, prop) => {
                 return acc.concat({
                     content: prop.name,
@@ -447,7 +447,12 @@ export default class Chart {
                     if (!value) {
                         return false;
                     }
-                    const hitOption = prop.options?.find(opt => {
+                    const options = (() => {
+                        if (prop.type ==='multi_select') return prop.multi_select.options;
+                        if (prop.type === 'select') return prop.select.options;
+                        return [];
+                    })();
+                    const hitOption = options.find(opt => {
                         return value.indexOf(opt.id) !== -1;
                     });
 

@@ -25,11 +25,11 @@ export default function StyleSettingDialog(props: Props) {
     
     const [ currentDataset ] = useAtom(currentDatasetAtom);
 
-    const [networkDefine, setNetworkDefine] = useState({
+    const [networkDefine, setNetworkDefine] = useState<NetworkDefine>(currentDataset?.networkDefine ?? {
         workspaceId: '',
         dbList: [],
         relationList: [],
-    } as NetworkDefine);
+    });
 
     const [editTarget, setEditTargetId] = useState(undefined as undefined | {id: string; type: 'db' | 'relation'});
 
