@@ -85,6 +85,11 @@ export default function Graph() {
             },
         });
 
+        if (currentDataset) {
+            chartRef.current?.setDataset(currentDataset);
+            chartRef.current?.redraw();
+        }
+
         return () => {
             chartRef.current?.destroy();
             chartRef.current = null;
@@ -94,9 +99,10 @@ export default function Graph() {
 
     // Datasetに変更が加わったら、チャート再描画
     useWatch(currentDataset, val => {
+        console.log('currentDatasetChanged');
         chartRef.current?.setDataset(val ?? null);
         chartRef.current?.redraw();
-    }, { immediate: true })
+    })
 
     useWatch(filter, val => {
         // 表示非表示を切り替え
