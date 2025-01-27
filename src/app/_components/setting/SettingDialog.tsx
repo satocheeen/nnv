@@ -13,6 +13,9 @@ import SelectFilterPropertyBody from './SelectFilterPropertyBody';
 import { createCallable } from 'react-call';
 import { DbDefine, NetworkDefine, PropertyKey } from '@/app/_types/types';
 import useSetting from './useSetting';
+import { oAuthRedirectStateAtom } from '@/app/_util/useApi';
+import { useAtom } from 'jotai';
+import { useWatch } from '@/app/_util/useWatch';
 
 enum Step {
     SelectDataset,
@@ -69,6 +72,19 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
 
     }, [t, getData]);
 
+    // OAuthリダイレクト後の復帰用
+    const [ , setOAuthRedirectState ] = useAtom(oAuthRedirectStateAtom);
+    useWatch(step, val => {
+        if (val === Step.SelectDb && selectedDatasetId) {
+            setOAuthRedirectState({
+                state: 'select-database',
+                datasetId: selectedDatasetId,
+            });
+        } else {
+            setOAuthRedirectState(undefined);
+        }
+    })
+
     const { networkDefine } = useSetting({
         workData: {
             baseDb: workData?.baseDb ?? { dbId: '', workspaceId: '' },
@@ -124,14 +140,11 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
         }, [call, createDataset, loadLatestData, networkDefine.dbList, networkDefine.relationList, networkDefine.workspaceId, selectedDatasetId, updateNetworkDefine, workData])
     )
 
-    const handleNextSelectDataset = useAtomCallback(
+    const updateWorkDataByDatasetId = useAtomCallback(
         useCallback((get, set, datasetId: string) => {
-            setStep(cur => cur + 1);
-            if (selectedDatasetId === datasetId) return;
-
-            setSelectedDatasetId(datasetId);
             const datasets = get(dataSetsAtom);
             const target = datasets.find(item => item.id === datasetId);
+            console.log('setWorkData', target)
             if (target) {
                 setWorkData({
                     baseDb: {
@@ -148,8 +161,21 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                 })
             }
 
-        }, [selectedDatasetId])
+        }, [])
     )
+
+    const handleNextSelectDataset = useAtomCallback(
+        useCallback((get, set, datasetId: string) => {
+            setStep(cur => cur + 1);
+            if (selectedDatasetId === datasetId) return;
+            setSelectedDatasetId(datasetId);
+            updateWorkDataByDatasetId(datasetId);
+        }, [selectedDatasetId, updateWorkDataByDatasetId])
+    )
+
+    if (datasetId && !workData) {
+        updateWorkDataByDatasetId(datasetId);
+    }
 
     const handleNextSelectDatabase = useCallback((targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => {
         setWorkData(cur => {
@@ -190,6 +216,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                     console.warn('想定外')
                     return null;
                 }
+                console.log('workData', workData)
                 return <SelectDatabaseBody
                         onNext={handleNextSelectDatabase}
                         onBack={onBack}

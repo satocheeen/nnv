@@ -21,7 +21,7 @@ type NotionOAuthInfo = {
 } | {
     type: 'internal';
 }
-export const oAuthInfosAtom = atomWithStorage<NotionOauth[]>('notionOAuths', []);
+export const oAuthInfosAtom = atomWithStorage<NotionOauth[]>('notionOAuths', [], undefined, { getOnInit: true });
 const myOAuthInfosAtom = atom<NotionOAuthInfo>((get) => {
     if (process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID) {
         // publicの場合
@@ -40,7 +40,6 @@ const myOAuthInfosAtom = atom<NotionOAuthInfo>((get) => {
 
 export const hasTokenAtom = atom((get) => {
     const oAuthInfos = get(myOAuthInfosAtom);
-    console.log('oAuthInfos', oAuthInfos)
     if (oAuthInfos.type === 'internal') return true;
     return oAuthInfos.oAuths.length > 0;
 })

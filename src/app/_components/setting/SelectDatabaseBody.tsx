@@ -4,12 +4,11 @@ import { Button, ListGroup, ListGroupItem, Modal, Spinner } from 'react-bootstra
 import { useTranslation } from 'react-i18next';
 import styles from './SelectDatabaseBody.module.scss';
 import { WorkspaceInfo } from '@/app/api/get_dblist/types';
-import useApi, { oAuthRedirectStateAtom } from '@/app/_util/useApi';
+import useApi from '@/app/_util/useApi';
 import NotionIcon from '../common/NotionIcon';
 import Image from 'next/image';
 import { Confirm } from '../Confirm';
 import { DbKey, WorkData } from './SettingDialog';
-import { useAtom } from 'jotai';
 
 type Props = {
     datasetId: string;
@@ -27,18 +26,14 @@ export default function SelectDatabaseBody(props: Props) {
     const [workspaceList, setWorkspaceList] = useState([] as WorkspaceInfo[]);
     const { t } = useTranslation();
     const [selectedDb, setSelectedDb] = useState<DbKey | undefined>(props.workData?.baseDb);
-    const [ , setOAuthRedirectState ] = useAtom(oAuthRedirectStateAtom);
     
+    console.log('selectedDb', selectedDb)
     // DB一覧読み込み
     const { getWorkspaceList, executeOAuth } = useApi();
     const [loading, setLoading] = useState(false);
     useEffect(() => {
         const loadDbList = async() => {
             setLoading(true);
-            setOAuthRedirectState({
-                state: 'select-database',
-                datasetId: props.datasetId,
-            });
             try {
                 const workspaceInfo = await getWorkspaceList();
                 setWorkspaceList(workspaceInfo);
@@ -48,11 +43,10 @@ export default function SelectDatabaseBody(props: Props) {
                 })
             } finally {
                 setLoading(false);
-                setOAuthRedirectState(undefined);
             }
         }
         loadDbList();
-    }, [getWorkspaceList, setOAuthRedirectState, t]);
+    }, [getWorkspaceList, props.datasetId, t]);
 
 
     // DB選択
