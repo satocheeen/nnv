@@ -1,6 +1,5 @@
 "use client"
 import styles from "./page.module.scss";
-import useSettingStore from "./_jotai/useSettingStore";
 import { useCallback, useEffect } from "react";
 import { SettingDialog } from "./_components/setting/SettingDialog";
 import { dataSetsAtom } from "./_jotai/useData";
@@ -17,7 +16,6 @@ const ControlPanel = dynamic(() => import("./_components/panel/ControlPanel"), {
 const Guide = dynamic(() => import("./_components/guide/Guide"), { ssr: false });
 
 export default function Home() {
-    const { hasData } = useSettingStore();
     const router = useRouter();
 
     const checkShowSettingDialog = useAtomCallback(
@@ -29,16 +27,16 @@ export default function Home() {
                 router.push('/welcome');
                 return;
             }
-            const datasets = get(dataSetsAtom);
             // 設定画面の情報があるなら、設定画面を開く
-            if (hasData) {
-                SettingDialog.call();
-            }
+            // if (hasData) {
+            //     SettingDialog.call();
+            // }
+            const datasets = get(dataSetsAtom);
             if (datasets.length === 0) {
                 // データセットが存在しない場合も、設定画面を開く
                 SettingDialog.call();
             }
-        }, [hasData, router])
+        }, [router])
     )
     
     // 起動時

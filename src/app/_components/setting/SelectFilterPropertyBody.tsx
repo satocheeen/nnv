@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Form, ListGroup, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import styles from './SelectFilterPropertyBody.module.scss';
-import useSettingStore from '@/app/_jotai/useSettingStore';
+import { NetworkDefine } from '@/app/_types/types';
 
 type SelectPropertyGroup = {
     dbId: string;
@@ -14,14 +14,15 @@ type SelectPropertyGroup = {
     }[];
 }
 type Props = {
+    networkDefine: NetworkDefine;
     onBack: () => void;
-    onSave: () => void;
+    onSave: (def: NetworkDefine) => void;
 }
 /**
  * フィルタに使用する項目を選択する画面
  */
 export default function SelectFilterPropertyBody(props: Props) {
-    const { networkDefine, setNetworkDefine } = useSettingStore();
+    const [ networkDefine, setNetworkDefine ] = useState(props.networkDefine);
 
     const selectPropertyGroups = useMemo((): SelectPropertyGroup[] => {
         if (!networkDefine) {
@@ -106,7 +107,7 @@ export default function SelectFilterPropertyBody(props: Props) {
                 </ListGroup>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={props.onSave}>
+                <Button onClick={()=>props.onSave(networkDefine)}>
                     {t('Save')}
                 </Button>
                 <Button variant="outline-secondary" onClick={props.onBack}>{t('Back')}</Button>

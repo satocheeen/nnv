@@ -3,22 +3,19 @@ import { Button, Form, ListGroup, Modal } from 'react-bootstrap';
 import { BsTrashFill, BsPencilFill, BsStarFill } from "react-icons/bs";
 import styles from './SelectDatasetBody.module.scss';
 import { useTranslation } from 'react-i18next';
-import useSettingStore from '@/app/_jotai/useSettingStore';
 import { useAtom } from 'jotai';
 import { dataSetsAtom } from '@/app/_jotai/useData';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
-import { DataSet, DialogMode, DialogResult } from '@/app/_types/types';
+import { DataSet, DialogMode, DialogResult, NetworkDefine } from '@/app/_types/types';
 import useData from '@/app/_jotai/useData';
 import { Confirm } from '../Confirm';
 
 type Props = {
-    /** 親からもらうprops定義 */
-    onNext: () => void;
+    onNext: (datasetId: string, networkDefine: NetworkDefine) => void;
     onClose: () => void;
 }
 
 export default function SelectDatasetBody(props: Props) {
-    const { setSelectDatasetId, setNetworkDefine } = useSettingStore();
     const [ datasets ] = useAtom(dataSetsAtom);
     const [ currentDatasetId ] = useAtom(currentDatasetIdAtom);
     const [tempSelectDatasetId, setTempSelectDatasetId] = useState(undefined as string | undefined);
@@ -71,24 +68,29 @@ export default function SelectDatasetBody(props: Props) {
         if (!tempSelectDatasetId) {
             return;
         }
-        if (tempSelectDatasetId === 'new') {
-            setNetworkDefine({
-                workspaceId: '',
-                dbList: [],
-                relationList: [],
-            });
-        } else {
-            const dataset = datasets.find(dataset => dataset.id === tempSelectDatasetId);
-            if (!dataset) {
-                console.warn('Datasetなし');
-                return;
+        const networkDefine = (() => {
+            if (tempSelectDatasetId === 'new') {
+                return {
+                    workspaceId: '',
+                    dbList: [],
+                    relationList: [],
+                };
+            } else {
+                const dataset = datasets.find(dataset => dataset.id === tempSelectDatasetId);
+                if (!dataset) {
+                    console.warn('Datasetなし');
+                    return {
+                        workspaceId: '',
+                        dbList: [],
+                        relationList: [],
+                    };
+                }
+                return Object.assign({}, dataset.networkDefine);
             }
-            setNetworkDefine(Object.assign({}, dataset.networkDefine));
-        }
-        setSelectDatasetId(tempSelectDatasetId);
-        props.onNext();
+        })();
+        props.onNext(tempSelectDatasetId, networkDefine);
 
-    }, [props, setNetworkDefine, datasets, setSelectDatasetId, tempSelectDatasetId]);
+    }, [props, datasets, tempSelectDatasetId]);
 
 
     const { t } = useTranslation();

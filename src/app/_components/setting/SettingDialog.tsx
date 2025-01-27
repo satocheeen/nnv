@@ -4,7 +4,6 @@ import useApi, { hasTokenAtom } from '@/app/_util/useApi';
 import { useTranslation } from 'react-i18next';
 import * as EventController from '@/app/_util/EventController';
 import { WorkspaceInfo } from '@/app/api/get_dblist/types';
-import useSettingStore, { Step } from '@/app/_jotai/useSettingStore';
 import { Confirm } from '../Confirm';
 import styles from './SettingDialog.module.scss';
 import { useAtom } from 'jotai';
@@ -17,9 +16,23 @@ import SelectDatabaseBody from './SelectDatabaseBody';
 import SelectRelationBody from './SelectRelationBody';
 import SelectFilterPropertyBody from './SelectFilterPropertyBody';
 import { createCallable } from 'react-call';
+import { NetworkDefine } from '@/app/_types/types';
+
+enum Step {
+    SelectDataset,
+    SelectDb,
+    SelectRelationCol,
+    SelectFilterCol,
+}
 
 export const SettingDialog = createCallable<void, void>(({ call }) => {
-    const { step, setStep, selectDatasetId, setSelectDatasetId, networkDefine, initialize } = useSettingStore();
+    const [ step, setStep ] = useState<Step>(Step.SelectDataset);
+    const [ selectDatasetId, setSelectDatasetId ] = useState<string|undefined>();
+    const [ networkDefine, setNetworkDefine ] = useState<NetworkDefine>({
+        workspaceId: '',
+        dbList: [],
+        relationList: [],
+    });
     const [loading, setLoading] = useState(false);
     const [workspaceList, setWorkspaceList] = useState([] as WorkspaceInfo[]);
     const [ datasets ] = useAtom(dataSetsAtom);
@@ -29,9 +42,8 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
     const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
 
     const onHide = useCallback(() => {
-        initialize();
         call.end();
-    }, [call, initialize]);
+    }, [call]);
 
     // 初期化
     // TODO: 記述場所見直し
@@ -111,25 +123,24 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
             })
         } finally {
             setLoading(false);
-            initialize();
         }
 
-    }, [t, getData, initialize]);
+    }, [t, getData]);
 
-    const onSave = useAtomCallback(
-        useCallback((get, set) => {
-            if (!selectDatasetId || !networkDefine) return;
+    const handleSave = useAtomCallback(
+        useCallback((get, set, def: NetworkDefine) => {
+            if (!selectDatasetId) return;
 
             // 定義保存 & カレントデータセット切り替え
             if (selectDatasetId === 'new') {
                 // 新規追加
-                const id = createDataset(networkDefine);
+                const id = createDataset(def);
                 set(currentDatasetIdAtom, id)
             } else{
                 // 更新
                 updateNetworkDefine({
                     datasetId: selectDatasetId,
-                    networkDefine,
+                    networkDefine: def,
                     dataClear: true,
 
                 })
@@ -139,12 +150,19 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
             setReserveLoadLatestData(true);
     
             call.end();
-        }, [call, createDataset, networkDefine, selectDatasetId, updateNetworkDefine])
+        }, [call, createDataset, selectDatasetId, updateNetworkDefine])
     )
 
-    const onNext = useCallback(() => {
-        setStep(step + 1);
-    }, [step, setStep])
+    const handleNextSelectDataset = useCallback((datasetId: string, networkDefine: NetworkDefine) => {
+        setSelectDatasetId(datasetId);
+        setNetworkDefine(networkDefine);
+        setStep(cur => cur + 1);
+    }, [])
+
+    const handleNext = useCallback((def: NetworkDefine) => {
+        setNetworkDefine(def);
+        setStep(cur => cur + 1);
+    }, [])
 
     const onBack = useCallback(() => {
         setStep(step - 1);
@@ -153,7 +171,7 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
     const body = useMemo(() => {
         switch(step) {
             case Step.SelectDataset:
-                return <SelectDatasetBody onNext={onNext} onClose={onHide} />
+                return <SelectDatasetBody onNext={handleNextSelectDataset} onClose={onHide} />
             case Step.SelectDb:
                 if (loading) {
                     return (
@@ -162,13 +180,24 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
                         </div>
                     );
                 }
-                return <SelectDatabaseBody onNext={onNext} onBack={onBack} workspaceList={workspaceList} />;
+                return <SelectDatabaseBody
+                        onNext={handleNext}
+                        onBack={onBack}
+                        networkDefine={networkDefine}
+                        workspaceList={workspaceList} />;
             case Step.SelectRelationCol:
-                return <SelectRelationBody dbList={dbList} onNext={onNext} onBack={onBack} />;
+                return <SelectRelationBody
+                        networkDefine={networkDefine}
+                        dbList={dbList}
+                        onNext={handleNext}
+                        onBack={onBack} />;
             case Step.SelectFilterCol:
-                return <SelectFilterPropertyBody onSave={onSave} onBack={onBack} />
+                return <SelectFilterPropertyBody
+                        networkDefine={networkDefine}
+                        onSave={handleSave}
+                        onBack={onBack} />
         }
-    }, [step, workspaceList, loading, dbList, onNext, onBack, onHide, onSave])
+    }, [step, handleNextSelectDataset, onHide, loading, handleNext, onBack, networkDefine, workspaceList, dbList, handleSave])
 
     return (
         <Modal show onHide={onHide} backdrop="static">

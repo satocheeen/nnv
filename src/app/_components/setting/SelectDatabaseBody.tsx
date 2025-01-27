@@ -1,18 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { DbDefine, NetworkDefine } from '@/app/_types/types';
 import { Button, ListGroup, ListGroupItem, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import styles from './SelectDatabaseBody.module.scss';
 import { WorkspaceInfo } from '@/app/api/get_dblist/types';
-import useSettingStore from '@/app/_jotai/useSettingStore';
 import useApi from '@/app/_util/useApi';
 import NotionIcon from '../common/NotionIcon';
 import Image from 'next/image';
 
 type Props = {
     workspaceList: WorkspaceInfo[];
+    networkDefine: NetworkDefine;
     onBack: () => void;
-    onNext: () => void;
+    onNext: (networkDefine: NetworkDefine) => void;
 }
 
 /**
@@ -21,20 +21,19 @@ type Props = {
  * @returns 
  */
 export default function SelectDatabaseBody(props: Props) {
-    const { networkDefine, setNetworkDefine } = useSettingStore();
-    const [selectedDb, setSelectedDb] = useState(undefined as {workspaceId: string; dbId: string} | undefined);
-    
-    useEffect(() => {
-        if (!networkDefine || networkDefine.dbList.length === 0) {
-            setSelectedDb(undefined);
+    const initialSelectedDb = useMemo(() => {
+        if (props.networkDefine.dbList.length === 0) {
+            return undefined;
         } else {
-            setSelectedDb({
-                workspaceId: networkDefine.workspaceId,
-                dbId: networkDefine.dbList[0].id,
-            });
+            return{
+                workspaceId: props.networkDefine.workspaceId,
+                dbId: props.networkDefine.dbList[0].id,
+            };
         }
-    }, [networkDefine]);
 
+    }, [props.networkDefine]);
+    const [selectedDb, setSelectedDb] = useState<{workspaceId: string; dbId: string} | undefined>(initialSelectedDb);
+    
     // DB選択
     const onDbSelect = useCallback((workspaceId: string, dbInfo: DbDefine) => {
         setSelectedDb({
@@ -53,16 +52,16 @@ export default function SelectDatabaseBody(props: Props) {
         if (selectedDb === undefined) {
             return;
         }
-        const currentDb = networkDefine?.dbList[0];
+        const currentDb = props.networkDefine.dbList[0];
         const targetWorkspace = props.workspaceList.find(workspace => workspace.workspaceId === selectedDb.workspaceId);
         const targetDb = targetWorkspace?.dbDefines.find(db => db.id === selectedDb.dbId);
         if (!targetDb) {
             console.warn('DBなし');
             return;
         }
-        if (selectedDb.workspaceId === networkDefine?.workspaceId && selectedDb.dbId === currentDb?.id) {
+        if (selectedDb.workspaceId === props.networkDefine.workspaceId && selectedDb.dbId === currentDb?.id) {
             // DB変更ないなら、DB定義を最新に置き換えて次に行く
-            const newDbList = networkDefine.dbList.map((db, index) => {
+            const newDbList = props.networkDefine.dbList.map((db, index) => {
                 if (index !== 0) {
                     return db;
                 }
@@ -77,11 +76,10 @@ export default function SelectDatabaseBody(props: Props) {
                 });
                 return newDb;
             });
-            const newNetworkDefine = Object.assign({}, networkDefine, {
+            const newNetworkDefine = Object.assign({}, props.networkDefine, {
                 dbList: newDbList,
             });
-            setNetworkDefine(newNetworkDefine);
-            props.onNext();
+            props.onNext(newNetworkDefine);
             return;
         }
         const newNetworkDefine = {
@@ -89,12 +87,13 @@ export default function SelectDatabaseBody(props: Props) {
             dbList: [targetDb],
             relationList: [],
         } as NetworkDefine;
-         setNetworkDefine(newNetworkDefine);
-        props.onNext();
-    }, [networkDefine, props, setNetworkDefine, selectedDb]);
+        props.onNext(newNetworkDefine);
+    }, [props, selectedDb]);
 
     const api = useApi();
     const oAuthLink = useMemo(() => {
+        if (!process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID) return null;
+
         return (
             <p className={styles.AuthMessage}>
                 <a href="#" onClick={api.oAuth}>

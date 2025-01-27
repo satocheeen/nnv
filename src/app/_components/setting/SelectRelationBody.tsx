@@ -1,16 +1,16 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Form, Modal, Table } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import { DbDefine, NetworkDefine, Property, RelationDefine } from '@/app/_types/types';
 import { isSamePair } from '@/app/_util/utility';
 import styles from './SelectRelationBody.module.scss';
-import useSettingStore from '@/app/_jotai/useSettingStore';
 import SettingChart from './SettingChart';
 
 type Props = {
     dbList: DbDefine[];
+    networkDefine: NetworkDefine;
     onBack: () => void;
-    onNext: () => void;
+    onNext: (def: NetworkDefine) => void;
 }
 
 type RelPropertyInfo = {
@@ -35,7 +35,7 @@ type DbRelItem = RelationDefine & {
 }
 
 export default function SelectRelationBody(props: Props) {
-    const { networkDefine, setNetworkDefine } = useSettingStore();
+    const [ networkDefine, setNetworkDefine ] = useState<NetworkDefine>(props.networkDefine);
 
     /**
      * 指定のDBが保持するリレーション項目の情報を返す
@@ -74,7 +74,7 @@ export default function SelectRelationBody(props: Props) {
 
     const getRelationItems = useMemo((): DbRelItem[] => {
         const items = [] as DbRelItem[];
-        networkDefine?.dbList.forEach(db => {
+        networkDefine.dbList.forEach(db => {
             const relPropertyInfos = getRelationProperies(db.id);
 
             const newItems = relPropertyInfos.map(relPropInfo => {
@@ -102,7 +102,7 @@ export default function SelectRelationBody(props: Props) {
             });
         });
         return items;
-    }, [networkDefine, getRelationProperies]);
+    }, [networkDefine.dbList, getRelationProperies]);
 
     const getDbProperied = useCallback((dbId: string): Property[] => {
         const dbInfo = props.dbList.find(db => db.id === dbId);
@@ -117,7 +117,7 @@ export default function SelectRelationBody(props: Props) {
     }, [props.dbList]);
 
     const okable = useMemo(() => {
-        return (networkDefine as NetworkDefine).relationList.length > 0;
+        return networkDefine.relationList.length > 0;
     }, [networkDefine])
 
     const isChecked = useCallback((item: DbRelItem) => {
@@ -240,7 +240,7 @@ export default function SelectRelationBody(props: Props) {
                 <SettingChart define={networkDefine as NetworkDefine} />
             </Modal.Body>
             <Modal.Footer>
-                <Button disabled={!okable} onClick={props.onNext}>
+                <Button disabled={!okable} onClick={()=>props.onNext(networkDefine)}>
                     {t('Next')}
                 </Button>
                 <Button variant="outline-secondary" onClick={props.onBack}>{t('Back')}</Button>
