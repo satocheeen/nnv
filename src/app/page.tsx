@@ -16,11 +16,13 @@ import { oAuthRedirectStateAtom } from "./_util/useApi";
 const ControlPanel = dynamic(() => import("./_components/panel/ControlPanel"), { ssr: false });
 const Guide = dynamic(() => import("./_components/guide/Guide"), { ssr: false });
 
+// ダイアログの二重起動を防ぐためのもの
+let settingDlgPromise: Promise<void> | null = null;
 export default function Home() {
     const router = useRouter();
 
     const checkShowSettingDialog = useAtomCallback(
-        useCallback((get) => {
+        useCallback(async(get, set) => {
             // 最初の訪問時はWelcome画面に遷移
             const visited = get(visitedAtom);
             if (!visited) {
@@ -29,14 +31,26 @@ export default function Home() {
             }
             // OAuthのリダイレクトStateがあるなら遷移する
             const oAuthRedirectState = get(oAuthRedirectStateAtom);
-            if (oAuthRedirectState === 'select-database') {
+            if (oAuthRedirectState?.state === 'select-database') {
                 // 設定画面を開く
-                SettingDialog.call();
+                console.log('open1')
+                settingDlgPromise = SettingDialog.call({
+                    datasetId: oAuthRedirectState.datasetId,
+                });
+                set(oAuthRedirectStateAtom, undefined);
+                await settingDlgPromise;
+                console.log('reset state');
+                settingDlgPromise = null;
+                return;
             }
             const datasets = get(dataSetsAtom);
-            if (datasets.length === 0) {
+            if (datasets.length === 0 && settingDlgPromise === null) {
                 // データセットが存在しない場合も、設定画面を開く
-                SettingDialog.call();
+                console.log('open2')
+                SettingDialog.call({
+                    datasetId: 'new',
+                });
+                return;
             }
         }, [router])
     )
@@ -44,8 +58,7 @@ export default function Home() {
     // 起動時
     useEffect(() => {
         checkShowSettingDialog();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [checkShowSettingDialog]);
 
     const [ loadingInfo ] = useAtom(loadingInfoAtom);
 

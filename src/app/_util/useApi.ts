@@ -45,7 +45,10 @@ export const hasTokenAtom = atom((get) => {
     return oAuthInfos.oAuths.length > 0;
 })
 
-export type OAuthRedirectState = 'select-database';
+export type OAuthRedirectState = {
+    state: 'select-database';
+    datasetId: string;
+}
 export const oAuthRedirectStateAtom = atom<OAuthRedirectState|undefined>();
 
 export default function useApi() {
@@ -61,7 +64,7 @@ export default function useApi() {
             url += '&response_type=code';
             url += '&owner=user';
             if (state) {
-                url += `&state=${state}`;
+                url += `&state=${JSON.stringify(state)}`;
             }
             document.location.href = url;
         }, [])

@@ -13,7 +13,7 @@ export default function DatasetSelector() {
     const [ currentDatasetId ] = useAtom(currentDatasetIdAtom);
     
     const onSettingDlgShow = useCallback(() => {
-        SettingDialog.call();
+        SettingDialog.call({});
     }, []);
 
     const onChange = useAtomCallback(

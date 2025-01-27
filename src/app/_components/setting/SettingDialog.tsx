@@ -1,11 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import * as EventController from '@/app/_util/EventController';
 import { Confirm } from '../Confirm';
-import { useAtom } from 'jotai';
 import useData from '@/app/_jotai/useData';
-import { atomWithStorage, useAtomCallback } from 'jotai/utils';
+import { useAtomCallback } from 'jotai/utils';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import SelectDatasetBody from './SelectDatasetBody';
 import SelectDatabaseBody from './SelectDatabaseBody';
@@ -37,23 +36,16 @@ export type DatasetInfo = {
     networkDefine: NetworkDefine;  // 編集の場合、変更前のものをセットする
 }
 
-// 登録・編集対象のデータセット情報
-// OAuthリダイレクトされた場合に復帰できるようにstorage保管している
-const selectedDatasetIdAtom = atomWithStorage<string|undefined>('selectedDatasetId', undefined, undefined, { getOnInit: true });
-
-export const SettingDialog = createCallable<void, void>(({ call }) => {
-    const [ selectedDatasetId, setSelectedDatasetId ] = useAtom(selectedDatasetIdAtom);
-    const [ step, setStep ] = useState<Step>(selectedDatasetId ? Step.SelectDb : Step.SelectDataset);
+type Props = {
+    datasetId?: string;
+}
+export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) => {
+    // 登録・編集対象のデータセット情報
+    const [ selectedDatasetId, setSelectedDatasetId ] = useState<string|undefined>(datasetId);
+    const [ step, setStep ] = useState<Step>(datasetId ? Step.SelectDb : Step.SelectDataset);
     const [ workData, setWorkData ] = useState<WorkData|undefined>();
     const { t } = useTranslation();
     const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
-
-    const onHide = useAtomCallback(
-        useCallback((get, set) => {
-            set(selectedDatasetIdAtom, undefined);
-            call.end();
-        }, [call])
-    );
 
     // 最新のストア状態で実行したいので、useCallbackは使用していない
     const loadLatestData = useCallback(async() => {
@@ -127,9 +119,7 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
             }
             // 最新データ取得
             loadLatestData();
-            // setReserveLoadLatestData(true);
     
-            set(selectedDatasetIdAtom, undefined);
             call.end();
         }, [call, createDataset, loadLatestData, networkDefine.dbList, networkDefine.relationList, networkDefine.workspaceId, selectedDatasetId, updateNetworkDefine, workData])
     )
@@ -172,11 +162,16 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
     const body = useMemo(() => {
         switch(step) {
             case Step.SelectDataset:
-                return <SelectDatasetBody onNext={handleNextSelectDataset} onClose={onHide} />
+                return <SelectDatasetBody onNext={handleNextSelectDataset} onClose={()=>call.end()} />
             case Step.SelectDb:
+                if (!selectedDatasetId) {
+                    console.warn('想定外')
+                    return null;
+                }
                 return <SelectDatabaseBody
                         onNext={handleNextSelectDatabase}
                         onBack={onBack}
+                        datasetId={selectedDatasetId}
                         workData={workData} />;
             case Step.SelectRelationCol:
                 if (!workData) {
@@ -197,10 +192,10 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
                         onSave={handleSave}
                         onBack={onBack} />
         }
-    }, [step, handleNextSelectDataset, onHide, handleNextSelectDatabase, onBack, workData, handleNextSelectRealtion, handleSave])
+    }, [step, handleNextSelectDataset, selectedDatasetId, handleNextSelectDatabase, onBack, workData, handleNextSelectRealtion, handleSave, call])
 
     return (
-        <Modal show onHide={onHide} backdrop="static">
+        <Modal show onHide={()=>call.end()} backdrop="static">
             <Modal.Header closeButton>
                 {t('Setting')}
             </Modal.Header>

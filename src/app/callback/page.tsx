@@ -45,5 +45,7 @@ export default async function CallbackPage({
         console.warn('failed get token', e)
     }
 
-    return <Redirector oAuthInfo={oAuthInfo} state={state as OAuthRedirectState} />
+    const stateValue = state ? JSON.parse(state) : undefined;
+
+    return <Redirector oAuthInfo={oAuthInfo} state={stateValue as OAuthRedirectState} />
 }

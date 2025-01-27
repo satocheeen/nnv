@@ -12,6 +12,7 @@ import { DbKey, WorkData } from './SettingDialog';
 import { useAtom } from 'jotai';
 
 type Props = {
+    datasetId: string;
     workData?: WorkData;
     onBack: () => void;
     onNext: (targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => void;
@@ -34,7 +35,10 @@ export default function SelectDatabaseBody(props: Props) {
     useEffect(() => {
         const loadDbList = async() => {
             setLoading(true);
-            setOAuthRedirectState('select-database');
+            setOAuthRedirectState({
+                state: 'select-database',
+                datasetId: props.datasetId,
+            });
             try {
                 const workspaceInfo = await getWorkspaceList();
                 setWorkspaceList(workspaceInfo);
