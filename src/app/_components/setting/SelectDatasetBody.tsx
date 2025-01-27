@@ -6,12 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { useAtom } from 'jotai';
 import { dataSetsAtom } from '@/app/_jotai/useData';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
-import { DataSet, DialogMode, DialogResult, NetworkDefine } from '@/app/_types/types';
+import { DataSet, DialogMode, DialogResult } from '@/app/_types/types';
 import useData from '@/app/_jotai/useData';
 import { Confirm } from '../Confirm';
+import { DatasetInfo } from './SettingDialog';
 
 type Props = {
-    onNext: (datasetId: string, networkDefine: NetworkDefine) => void;
+    onNext: (dataset?: DatasetInfo) => void;
     onClose: () => void;
 }
 
@@ -70,25 +71,24 @@ export default function SelectDatasetBody(props: Props) {
         }
         const networkDefine = (() => {
             if (tempSelectDatasetId === 'new') {
-                return {
-                    workspaceId: '',
-                    dbList: [],
-                    relationList: [],
-                };
+                return;
             } else {
                 const dataset = datasets.find(dataset => dataset.id === tempSelectDatasetId);
                 if (!dataset) {
                     console.warn('Datasetなし');
-                    return {
-                        workspaceId: '',
-                        dbList: [],
-                        relationList: [],
-                    };
+                    return;
                 }
                 return Object.assign({}, dataset.networkDefine);
             }
         })();
-        props.onNext(tempSelectDatasetId, networkDefine);
+        if (networkDefine) {
+            props.onNext({
+                id: tempSelectDatasetId,
+                networkDefine,
+            });
+        } else {
+            props.onNext();
+        }
 
     }, [props, datasets, tempSelectDatasetId]);
 

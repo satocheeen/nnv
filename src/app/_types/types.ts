@@ -1,4 +1,5 @@
 import { Colors } from "../_define/const";
+import { NotionProperty } from "../api/get_dblist/types";
 
 /**
  * 操作説明
@@ -76,7 +77,7 @@ export type DbDefine = {
     name: string; // DB名
     icon: Icon | null;
     nodeStyle?: string;  // ノードスタイル
-    properties: Property[];
+    properties: NotionProperty[]; //Property[];
 }
 export type DbDefineWithRelation = DbDefine & {
     relationColIds: string[]; // from-DBの場合、リレーション項目IDを設定する
@@ -118,16 +119,6 @@ export type Icon = {
     emoji?: string;
     file?: {
         url?: string;
-    }
-}
-
-export type NotionProperty = {
-    id: string;
-    name: string;
-    type: 'select' | 'multi_select' | 'relation' | 'title';
-    relation?: {
-        database_id: string;
-        synced_property_name: string;
     }
 }
 

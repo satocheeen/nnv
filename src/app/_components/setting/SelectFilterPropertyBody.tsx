@@ -2,8 +2,13 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Form, ListGroup, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import styles from './SelectFilterPropertyBody.module.scss';
-import { NetworkDefine } from '@/app/_types/types';
+import { WorkData } from './SettingDialog';
+import useSetting from './useSetting';
 
+export type PropetyKey = {
+    dbId: string;
+    propertyId: string;
+}
 type SelectPropertyGroup = {
     dbId: string;
     dbName: string;
@@ -14,65 +19,62 @@ type SelectPropertyGroup = {
     }[];
 }
 type Props = {
-    networkDefine: NetworkDefine;
+    workData: WorkData;
     onBack: () => void;
-    onSave: (def: NetworkDefine) => void;
+    onSave: (targets: PropetyKey[]) => void;
 }
 /**
  * フィルタに使用する項目を選択する画面
  */
 export default function SelectFilterPropertyBody(props: Props) {
-    const [ networkDefine, setNetworkDefine ] = useState(props.networkDefine);
-
+    const [ selectedProperties, setSelectedProperties ] = useState<PropetyKey[]>([]);
+    const { dbIdsInTargetRelations } = useSetting({
+        workData: props.workData,
+    })
     const selectPropertyGroups = useMemo((): SelectPropertyGroup[] => {
-        if (!networkDefine) {
-            return [];
-        }
-        return networkDefine.dbList.map(db => {
+        return dbIdsInTargetRelations.map(dbId => {
+            const db = props.workData.targetWorkspaceDbList.find(item => item.id === dbId);
+            if (!db) return;
             return {
                 dbId: db.id,
                 dbName: db.name,
                 properties: db.properties
                                 .filter(prop => prop.type === 'select' || prop.type === 'multi_select' || prop.type === 'url')
                                 .map(prop => {
+                                    const checked = selectedProperties.some(item => item.dbId === db.id && item.propertyId === prop.id);
                                     return {
                                         id: prop.id,
                                         name: prop.name,
-                                        checked: prop.isUse,
+                                        checked,
                                     }
                                 }),
             }
-        });
-    }, [networkDefine]);
+        }).filter(val => !!val);
+    }, [dbIdsInTargetRelations, props.workData.targetWorkspaceDbList, selectedProperties]);
 
-    const onChangeProperty = useCallback((dbId: string, propertyId: string, value: boolean) => {
-        if (!networkDefine) {
-            return;
+    const handleChangeProperty = useCallback((dbId: string, propertyId: string, value: boolean) => {
+        const index = selectedProperties.findIndex(item => item.dbId === dbId && item.propertyId === propertyId);
+        if (value && index === -1) {
+            // 追加
+            setSelectedProperties(cur => cur.concat({
+                dbId,
+                propertyId,
+            }))
+        } else if (!value && index !== -1) {
+            // 削除
+            setSelectedProperties(cur => {
+                return cur.filter((_, i) => i !== index);
+            })
         }
-        const newDbList = networkDefine.dbList.concat();
-        const targetDb = newDbList.find(db => db.id === dbId);
-        if (!targetDb) {
-            console.warn('DBなし', dbId);
-            return;
-        }
-        const prop = targetDb.properties.find(prop => prop.id === propertyId);
-        if (!prop) {
-            console.warn('プロパティなし');
-            return;
-        }
-        prop.isUse = value;
-        setNetworkDefine(Object.assign({}, networkDefine, {
-            dbList: newDbList,
-        }));
-    }, [networkDefine, setNetworkDefine]);
+    }, [selectedProperties]);
 
     const onChange = useCallback((dbId: string, propertyId: string, evt: React.ChangeEvent<HTMLInputElement>) => {
-        onChangeProperty(dbId, propertyId, evt.target.checked);
-    }, [onChangeProperty]);
+        handleChangeProperty(dbId, propertyId, evt.target.checked);
+    }, [handleChangeProperty]);
 
     const onClick = useCallback((dbId: string, propertyId: string, value: boolean) => {
-        onChangeProperty(dbId, propertyId, value);
-    }, [onChangeProperty]);
+        handleChangeProperty(dbId, propertyId, value);
+    }, [handleChangeProperty]);
 
 
     const { t } = useTranslation();
@@ -107,7 +109,7 @@ export default function SelectFilterPropertyBody(props: Props) {
                 </ListGroup>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={()=>props.onSave(networkDefine)}>
+                <Button onClick={()=>props.onSave(selectedProperties)}>
                     {t('Save')}
                 </Button>
                 <Button variant="outline-secondary" onClick={props.onBack}>{t('Back')}</Button>

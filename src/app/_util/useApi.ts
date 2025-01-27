@@ -1,5 +1,5 @@
 import axios from "axios";
-import { NotionOauth, Property } from "../_types/types"
+import { NotionOauth } from "../_types/types"
 import { useCallback } from "react";
 import { atom } from "jotai";
 import { currentDatasetAtom } from "../_jotai/operation";
@@ -39,6 +39,7 @@ const myOAuthInfosAtom = atom<NotionOAuthInfo>((get) => {
 
 export const hasTokenAtom = atom((get) => {
     const oAuthInfos = get(myOAuthInfosAtom);
+    console.log('oAuthInfos', oAuthInfos)
     if (oAuthInfos.type === 'internal') return true;
     return oAuthInfos.oAuths.length > 0;
 })
@@ -47,7 +48,7 @@ export default function useApi() {
     /**
      * Notion認証を行う
      */
-    const oAuth = useCallback(() => {
+    const executeOAuth = useCallback(() => {
         let url = 'https://api.notion.com/v1/oauth/authorize?';
         url += `client_id=${process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID}`;
         url += `&redirect_uri=${NotionOAuthRedirectUri}`;
@@ -103,7 +104,7 @@ export default function useApi() {
 
     }, [getToken]);
 
-    const getDbList = useAtomCallback(
+    const getWorkspaceList = useAtomCallback(
         useCallback(async(get) => {
             const resultList = [] as WorkspaceInfo[];
             // アクセス可能な全てのワークスペースのDB一覧を取得する
@@ -137,24 +138,25 @@ export default function useApi() {
                         id: res.id,
                         name: res.title,
                         icon: res.icon,
-                        properties: Object.values(res.properties).map(prop => {
-                            let relation;
-                            if (prop.type === 'relation') {
-                                const relDb = dbInfos.find(r => r.id === prop.relation?.database_id);
-                                const relProp = relDb?.properties[prop.relation?.synced_property_name as string];
-                                relation = {
-                                    dbId: relDb?.id as string,
-                                    propertyId: relProp?.id as string,
-                                }
-                            }
-                            return {
-                                id: prop.id,
-                                name: prop.name,
-                                type: prop.type,
-                                isUse: false,
-                                relation,
-                            } as Property;
-                        }),
+                        properties: Object.values(res.properties),
+                        // Object.values(res.properties).map(prop => {
+                        //     let relation;
+                        //     if (prop.type === 'relation') {
+                        //         const relDb = dbInfos.find(r => r.id === prop.relation?.database_id);
+                        //         const relProp = relDb?.properties[prop.relation?.synced_property_name as string];
+                        //         relation = {
+                        //             dbId: relDb?.id as string,
+                        //             propertyId: relProp?.id as string,
+                        //         }
+                        //     }
+                        //     return {
+                        //         id: prop.id,
+                        //         name: prop.name,
+                        //         type: prop.type,
+                        //         isUse: false,
+                        //         relation,
+                        //     } as Property;
+                        // }),
                     };
                 });
     
@@ -223,8 +225,8 @@ export default function useApi() {
     }, [getToken]);
 
     return {
-        oAuth,
-        getDbList,
+        executeOAuth,
+        getWorkspaceList,
         getOptions,
         getData,
         getSingleData,

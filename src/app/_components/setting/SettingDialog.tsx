@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Modal, Spinner } from 'react-bootstrap';
-import useApi, { hasTokenAtom } from '@/app/_util/useApi';
+import { Modal } from 'react-bootstrap';
+import { hasTokenAtom } from '@/app/_util/useApi';
 import { useTranslation } from 'react-i18next';
 import * as EventController from '@/app/_util/EventController';
-import { WorkspaceInfo } from '@/app/api/get_dblist/types';
 import { Confirm } from '../Confirm';
-import styles from './SettingDialog.module.scss';
 import { useAtom } from 'jotai';
 import { dataSetsAtom } from '@/app/_jotai/useData';
 import useData from '@/app/_jotai/useData';
@@ -13,10 +11,11 @@ import { useAtomCallback } from 'jotai/utils';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import SelectDatasetBody from './SelectDatasetBody';
 import SelectDatabaseBody from './SelectDatabaseBody';
-import SelectRelationBody from './SelectRelationBody';
+import SelectRelationBody, { RelationKey } from './SelectRelationBody';
 import SelectFilterPropertyBody from './SelectFilterPropertyBody';
 import { createCallable } from 'react-call';
-import { NetworkDefine } from '@/app/_types/types';
+import { DbDefine, NetworkDefine, PropertyKey } from '@/app/_types/types';
+import useSetting from './useSetting';
 
 enum Step {
     SelectDataset,
@@ -25,25 +24,35 @@ enum Step {
     SelectFilterCol,
 }
 
+export type DbKey = {
+    workspaceId: string;
+    dbId: string;
+}
+export type WorkData = {
+    // 基点データベースID
+    baseDb: DbKey;
+    targetWorkspaceDbList: DbDefine[];  // 基点データベースの属するワークスペースに存在するDB一覧
+    targetRelations: RelationKey[];     // 使用するリレーション項目
+}
+export type DatasetInfo = {
+    id: string;
+    networkDefine: NetworkDefine;  // 編集の場合、変更前のものをセットする
+}
 export const SettingDialog = createCallable<void, void>(({ call }) => {
     const [ step, setStep ] = useState<Step>(Step.SelectDataset);
-    const [ selectDatasetId, setSelectDatasetId ] = useState<string|undefined>();
-    const [ networkDefine, setNetworkDefine ] = useState<NetworkDefine>({
-        workspaceId: '',
-        dbList: [],
-        relationList: [],
-    });
-    const [loading, setLoading] = useState(false);
-    const [workspaceList, setWorkspaceList] = useState([] as WorkspaceInfo[]);
+    // 登録・編集対象のデータセット情報
+    const [ selectDataset, setSelectDataset ] = useState<DatasetInfo|undefined>();
+    const [ workData, setWorkData ] = useState<WorkData|undefined>();
     const [ datasets ] = useAtom(dataSetsAtom);
     const { t } = useTranslation();
-    const { getDbList, oAuth } = useApi();
     const [ hasToken ] = useAtom(hasTokenAtom);
     const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
 
     const onHide = useCallback(() => {
         call.end();
     }, [call]);
+
+    console.log('hasToken', hasToken)
 
     // 初期化
     // TODO: 記述場所見直し
@@ -56,43 +65,30 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
         }
         if (datasets.length === 0) {
             // Datasetが０個の場合は、SelectDbから
-            setSelectDatasetId('new');
+            setSelectDataset(undefined);
             setStep(Step.SelectDb);
         } else {
-            setSelectDatasetId(undefined);
+            setSelectDataset(undefined);
             setStep(Step.SelectDataset);
         }
         // check token
+        // console.log('hasToken', hasToken)
         if (!hasToken) {
-            oAuth();
+            // executeOAuth();
             return;
         }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // DB一覧読み込み
-    useEffect(() => {
-        const loadDbList = async() => {
-            setLoading(true);
-            try {
-                const workspaceInfo = await getDbList();
-                setWorkspaceList(workspaceInfo);
-            } catch(e) {
-                Confirm.call({
-                    message: t('Error_GetDbList') + '\n' + e,
-                })
-            } finally {
-                setLoading(false);
-            }
-        }
-        loadDbList();
-    }, [getDbList, t]);
+    // useEffect(() => {
+    //     console.log('hasToken', hasToken)
+    // }, [hasToken])
 
-    const dbList = useMemo(() => {
-        const target = workspaceList.find(ws => ws.workspaceId === networkDefine?.workspaceId);
-        return target ? target.dbDefines : [];
-    }, [workspaceList, networkDefine]);
+    // const dbList = useMemo(() => {
+    //     const target = workspaceList.find(ws => ws.workspaceId === networkDefine?.workspaceId);
+    //     return target ? target.dbDefines : [];
+    // }, [workspaceList, networkDefine]);
 
     // 直接呼ぶと、新しいdatasetが追加された状態になっていないので、reserveフラグ経由で呼び出す
     // TODO: 見直し
@@ -112,7 +108,7 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
             message: t('Msg_Load_LatestData'),
         })
 
-        setLoading(true);
+        // setLoading(true);
         try {
             await getData();
 
@@ -122,45 +118,107 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
                 message: t('Error_GetData') + '\n' + e,
             })
         } finally {
-            setLoading(false);
+            // setLoading(false);
         }
 
     }, [t, getData]);
 
+    const { networkDefine } = useSetting({
+        workData: {
+            baseDb: workData?.baseDb ?? { dbId: '', workspaceId: '' },
+            targetRelations: workData?.targetRelations ?? [],
+            targetWorkspaceDbList: workData?.targetWorkspaceDbList ?? [],
+        }
+    });
     const handleSave = useAtomCallback(
-        useCallback((get, set, def: NetworkDefine) => {
-            if (!selectDatasetId) return;
+        useCallback((get, set, targets: PropertyKey[]) => {
+            if (!workData) return;
+
+            const dbList = networkDefine.dbList.map((item): DbDefine => {
+                return {
+                    id: item.id,
+                    icon: item.icon,
+                    name: item.name,
+                    properties: item.properties.filter(prop => {
+                        if (!targets) return false;
+                        const hit = targets.some(t => t.dbId === item.id && t.propertyId === prop.id);
+                        return hit;
+                    }),
+                    nodeStyle: item.nodeStyle,
+                }
+            })
+            const newNetWorkDefine: NetworkDefine = {
+                workspaceId: networkDefine.workspaceId,
+                dbList,
+                relationList: networkDefine.relationList,
+            }
 
             // 定義保存 & カレントデータセット切り替え
-            if (selectDatasetId === 'new') {
+            if (!selectDataset) {
                 // 新規追加
-                const id = createDataset(def);
+                const id = createDataset(newNetWorkDefine);
                 set(currentDatasetIdAtom, id)
             } else{
+                // TODO: スタイル情報をマージ
                 // 更新
                 updateNetworkDefine({
-                    datasetId: selectDatasetId,
-                    networkDefine: def,
+                    datasetId: selectDataset.id,
+                    networkDefine: newNetWorkDefine,
                     dataClear: true,
-
                 })
-                set(currentDatasetIdAtom, selectDatasetId)
+                set(currentDatasetIdAtom, selectDataset.id)
             }
             // 最新データ取得
             setReserveLoadLatestData(true);
     
             call.end();
-        }, [call, createDataset, selectDatasetId, updateNetworkDefine])
+        }, [call, createDataset, networkDefine.dbList, networkDefine.relationList, networkDefine.workspaceId, selectDataset, updateNetworkDefine, workData])
     )
 
-    const handleNextSelectDataset = useCallback((datasetId: string, networkDefine: NetworkDefine) => {
-        setSelectDatasetId(datasetId);
-        setNetworkDefine(networkDefine);
+    const handleNextSelectDataset = useCallback((dataset?: DatasetInfo) => {
+        setSelectDataset(dataset);
+        if (dataset) {
+            const networkDefine = dataset.networkDefine;
+            setWorkData({
+                baseDb: {
+                    dbId: networkDefine.dbList[0].id,
+                    workspaceId: networkDefine.workspaceId,
+                },
+                targetWorkspaceDbList: networkDefine.dbList,
+                targetRelations: networkDefine.relationList.map(rel => {
+                    return {
+                        dbId: rel.from.dbId,
+                        propertyId: rel.from.propertyId,
+                    }
+                })
+            })
+        }
         setStep(cur => cur + 1);
     }, [])
 
-    const handleNext = useCallback((def: NetworkDefine) => {
-        setNetworkDefine(def);
+    const handleNextSelectDatabase = useCallback((targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => {
+        setWorkData(cur => {
+            return {
+                baseDb: baseDbKey,
+                targetWorkspaceDbList,
+                targetRelations: cur?.targetRelations ?? [],
+            }
+        })
+        setStep(cur => cur + 1);
+    }, [])
+
+    const handleNextSelectRealtion = useCallback((rels: RelationKey[]) => {
+        setWorkData(cur => {
+            if (!cur)  {
+                console.warn('想定外');
+                return cur;
+            }
+            return {
+                baseDb: cur.baseDb,
+                targetWorkspaceDbList: cur.targetWorkspaceDbList,
+                targetRelations: rels,
+            }
+        })
         setStep(cur => cur + 1);
     }, [])
 
@@ -173,31 +231,30 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
             case Step.SelectDataset:
                 return <SelectDatasetBody onNext={handleNextSelectDataset} onClose={onHide} />
             case Step.SelectDb:
-                if (loading) {
-                    return (
-                        <div className={styles.SpinnerArea}>
-                            <Spinner animation='border' variant='info'/>
-                        </div>
-                    );
-                }
                 return <SelectDatabaseBody
-                        onNext={handleNext}
+                        onNext={handleNextSelectDatabase}
                         onBack={onBack}
-                        networkDefine={networkDefine}
-                        workspaceList={workspaceList} />;
+                        workData={workData} />;
             case Step.SelectRelationCol:
+                if (!workData) {
+                    console.warn('想定外')
+                    return null;
+                }
                 return <SelectRelationBody
-                        networkDefine={networkDefine}
-                        dbList={dbList}
-                        onNext={handleNext}
+                        workData={workData}
+                        onNext={handleNextSelectRealtion}
                         onBack={onBack} />;
             case Step.SelectFilterCol:
+                if (!workData) {
+                    console.warn('想定外')
+                    return null;
+                }
                 return <SelectFilterPropertyBody
-                        networkDefine={networkDefine}
+                        workData={workData}
                         onSave={handleSave}
                         onBack={onBack} />
         }
-    }, [step, handleNextSelectDataset, onHide, loading, handleNext, onBack, networkDefine, workspaceList, dbList, handleSave])
+    }, [step, handleNextSelectDataset, onHide, handleNextSelectDatabase, onBack, workData, handleNextSelectRealtion, handleSave])
 
     return (
         <Modal show onHide={onHide} backdrop="static">
