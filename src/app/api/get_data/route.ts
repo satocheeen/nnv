@@ -7,6 +7,11 @@ export async function POST(
 ) {
     const body = await request.json();
     const token = body.token ?? NotionKey;
+    if (!token) {
+        return NextResponse.json({
+            err: 'no token'
+        }, { status: 400 })
+    }
     const params = body.params;
 
     const data = await getData(token, params);
