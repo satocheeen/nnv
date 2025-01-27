@@ -149,11 +149,6 @@ export enum DialogMode {
     YesNo,
 }
 
-export type Guide = {
-    kind: GuideKind;
-    operationed: boolean;   // ユーザが操作したかどうか
-}
-
 export enum TempGuideKind {
     CreateRelation = 'CreateRelation',
 }

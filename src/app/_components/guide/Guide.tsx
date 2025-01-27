@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import styles from './Guide.module.scss';
 import useMedia from 'use-media';
 import { useAtom } from 'jotai';
-import useGuide, { guidesAtom, tempGuideAtom } from './useGuide';
+import useGuide, { operatedGuidesAtom, tempGuideAtom } from './useGuide';
+import { GuideKind } from '@/app/_types/types';
 
 /**
  * 操作説明パネル
@@ -17,7 +18,7 @@ export default function Guide() {
     const [ tempGuide ] = useAtom(tempGuideAtom);
 
     // 初めて触る人向けの操作説明
-    const [ guides ] = useAtom(guidesAtom);
+    const [ operatedGuides ] = useAtom(operatedGuidesAtom);
     
     const { t } = useTranslation();
 
@@ -28,14 +29,15 @@ export default function Guide() {
     }, [tempGuide]);
 
     const currentGuide = useMemo(() => {
-        return guides.find(guide => !guide.operationed);
-    }, [guides]);
+        const allGuides = Object.keys(GuideKind) as GuideKind[];
+        return allGuides.find(guide => !operatedGuides.includes(guide));
+    }, [operatedGuides]);
 
     const currentMessage = useMemo(() => {
         if (tempGuide) {
             return t('Guide_' + tempGuide.kind);
         } else if (currentGuide){
-            return t('Guide_' + currentGuide.kind);
+            return t('Guide_' + currentGuide);
         } else {
             return null;
         }
@@ -56,7 +58,7 @@ export default function Guide() {
         if (tempGuide) {
             setTempGuideShow(false);
         } else if (currentGuide) {
-            operatedGuide(currentGuide.kind);
+            operatedGuide(currentGuide);
         }
     }, [tempGuide, currentGuide, operatedGuide]);
 
