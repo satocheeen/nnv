@@ -96,7 +96,7 @@ export default function Graph() {
     useWatch(currentDataset, val => {
         chartRef.current?.setDataset(val ?? null);
         chartRef.current?.redraw();
-    })
+    }, { immediate: true })
 
     useWatch(filter, val => {
         // 表示非表示を切り替え

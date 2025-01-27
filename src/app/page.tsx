@@ -4,14 +4,17 @@ import useSettingStore from "./_jotai/useSettingStore";
 import { useCallback, useEffect } from "react";
 import { SettingDialog } from "./_components/setting/SettingDialog";
 import { dataSetsAtom } from "./_jotai/useData";
-import Graph from "./_components/chart/Graph";
 import { useAtomCallback } from "jotai/utils";
-import ControlPanel from "./_components/panel/ControlPanel";
 import { Spinner } from "react-bootstrap";
 import { useAtom } from "jotai";
 import { loadingInfoAtom, visitedAtom } from "./_jotai/operation";
-import Guide from "./_components/guide/Guide";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import Graph from "./_components/chart/Graph";
+
+// const Graph = dynamic(() => import("./_components/chart/Graph"), { ssr: false });
+const ControlPanel = dynamic(() => import("./_components/panel/ControlPanel"), { ssr: false });
+const Guide = dynamic(() => import("./_components/guide/Guide"), { ssr: false });
 
 export default function Home() {
     const { hasData } = useSettingStore();
