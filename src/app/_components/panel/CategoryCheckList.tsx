@@ -36,10 +36,12 @@ export default function CategoryCheckList() {
 
         networkDefine.dbList.forEach(db => {
             db.properties.forEach(prop => {
-                if (!prop.isUse) {
-                    return;
-                }
-                const items = prop.options?.map(opt => {
+                const options = (() => {
+                    if (prop.type === 'multi_select') return prop.multi_select.options;
+                    if (prop.type === 'select') return prop.select.options;
+                    return [];
+                })();
+                const items = options.map(opt => {
                     const key = db.id + '-' + prop.id + '-' + opt.id;
                     let checked;
                     if(!isCateogoryFiltering) {

@@ -93,6 +93,7 @@ export default function useSetting(props: Props) {
         return [ props.workData.baseDb.dbId, ...relDbIds ];
     }, [props.workData.baseDb.dbId, props.workData.targetRelations, props.workData.targetWorkspaceDbList])
 
+    // 関連するDBたちが持つRelation項目
     const relationItems = useMemo((): DbRelItem[] => {
         return dbIdsInTargetRelations.reduce((acc, cur) => {
              // 指定のDBが保持するリレーション項目の情報を取得
@@ -136,7 +137,14 @@ export default function useSetting(props: Props) {
                 return props.workData.targetWorkspaceDbList.find(item => item.id === id);
             }).filter(item => !!item),
             workspaceId: props.workData.baseDb.workspaceId,
-            relationList: relationItems.map(item => {
+            relationList: relationItems
+            .filter(item => {
+                const isTarget = props.workData.targetRelations.some(target => {
+                    return target.dbId === item.from.dbId && target.propertyId === item.from.propertyId;
+                })
+                return isTarget;
+            })
+            .map(item => {
                 return {
                     from: {
                         dbId: item.from.dbId,
@@ -151,7 +159,7 @@ export default function useSetting(props: Props) {
                 return dbIdsInTargetRelations.includes(item.from.dbId) && dbIdsInTargetRelations.includes(item.to.dbId);
             })
         }
-    }, [dbIdsInTargetRelations, props.workData.baseDb.workspaceId, props.workData.targetWorkspaceDbList, relationItems])
+    }, [dbIdsInTargetRelations, props.workData.baseDb.workspaceId, props.workData.targetRelations, props.workData.targetWorkspaceDbList, relationItems])
 
     return {
         dbIdsInTargetRelations,

@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import * as EventController from '@/app/_util/EventController';
 import { Confirm } from '../Confirm';
-import useData from '@/app/_jotai/useData';
+import useData, { dataSetsAtom } from '@/app/_jotai/useData';
 import { useAtomCallback } from 'jotai/utils';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import SelectDatasetBody from './SelectDatasetBody';
@@ -124,10 +124,32 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
         }, [call, createDataset, loadLatestData, networkDefine.dbList, networkDefine.relationList, networkDefine.workspaceId, selectedDatasetId, updateNetworkDefine, workData])
     )
 
-    const handleNextSelectDataset = useCallback((datasetId: string) => {
-        setSelectedDatasetId(datasetId);
-        setStep(cur => cur + 1);
-    }, [setSelectedDatasetId])
+    const handleNextSelectDataset = useAtomCallback(
+        useCallback((get, set, datasetId: string) => {
+            setStep(cur => cur + 1);
+            if (selectedDatasetId === datasetId) return;
+
+            setSelectedDatasetId(datasetId);
+            const datasets = get(dataSetsAtom);
+            const target = datasets.find(item => item.id === datasetId);
+            if (target) {
+                setWorkData({
+                    baseDb: {
+                        workspaceId: target.networkDefine.workspaceId,
+                        dbId: target.networkDefine.dbList[0].id,
+                    },
+                    targetWorkspaceDbList: [],
+                    targetRelations: target.networkDefine.relationList.map(item => {
+                        return {
+                            dbId: item.from.dbId,
+                            propertyId: item.from.propertyId,
+                        }
+                    }),
+                })
+            }
+
+        }, [selectedDatasetId])
+    )
 
     const handleNextSelectDatabase = useCallback((targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => {
         setWorkData(cur => {
