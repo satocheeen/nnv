@@ -2,6 +2,7 @@ import axios from "axios";
 import { NotionOauth } from "../_types/types";
 import { NotionOAuthRedirectUri, OAuth } from "../api/common";
 import Redirector from "./Redirector";
+import { OAuthRedirectState } from "../_util/useApi";
 
 /**
  * Notionからのアクセストークンのリダイレクトページ
@@ -44,5 +45,5 @@ export default async function CallbackPage({
         console.warn('failed get token', e)
     }
 
-    return <Redirector oAuthInfo={oAuthInfo} />
+    return <Redirector oAuthInfo={oAuthInfo} state={state as OAuthRedirectState} />
 }

@@ -2,20 +2,22 @@
 import React, { useEffect } from 'react';
 import { NotionOauth } from '../_types/types';
 import { useAtom } from 'jotai';
-import { oAuthInfosAtom } from '../_util/useApi';
+import { oAuthInfosAtom, OAuthRedirectState, oAuthRedirectStateAtom } from '../_util/useApi';
 import { useRouter } from 'next/navigation';
 import { t } from 'i18next';
 import { Confirm } from '../_components/Confirm';
 
 type Props = {
     oAuthInfo?: NotionOauth;
+    state?: OAuthRedirectState;
 }
 
 /**
  * tokenをlocal storageに格納して、元のページに戻るためのコンポーネント
  */
-export default function Redirector({ oAuthInfo }: Props) {
+export default function Redirector({ oAuthInfo, state }: Props) {
     const [ , setOAuthInfos ] = useAtom(oAuthInfosAtom);
+    const [ , setOAuthRedirectState ] = useAtom(oAuthRedirectStateAtom);
     const router = useRouter();
 
     useEffect(() => {
@@ -40,8 +42,11 @@ export default function Redirector({ oAuthInfo }: Props) {
                 message: t('Getting_Access_Token_Error')
             })
         }
+        if (state) {
+            setOAuthRedirectState(state);
+        }
         router.push('/')
-    }, [oAuthInfo, router, setOAuthInfos])
+    }, [oAuthInfo, router, setOAuthInfos, setOAuthRedirectState, state])
 
     return (
         <div>

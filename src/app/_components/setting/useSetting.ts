@@ -40,7 +40,6 @@ export default function useSetting(props: Props) {
     const getRelationProperies = useCallback((dbId: string): RelPropertyInfo[] => {
         const target = props.workData.targetWorkspaceDbList.find(db => db.id === dbId);
         if (!target) {
-            console.warn('DBなし', dbId);
             return [];
         }
         return Object.values(target.properties)

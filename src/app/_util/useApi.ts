@@ -13,6 +13,7 @@ import { CreateRelationParam, CreateRelationResult } from "../api/create_relatio
 import { RemoveRelationParam } from "../api/remove_relation/types";
 import { atomWithStorage, useAtomCallback } from "jotai/utils";
 import { NotionOAuthRedirectUri } from "../api/common";
+import { useTranslation } from "react-i18next";
 
 type NotionOAuthInfo = {
     type: 'public';
@@ -44,18 +45,27 @@ export const hasTokenAtom = atom((get) => {
     return oAuthInfos.oAuths.length > 0;
 })
 
+export type OAuthRedirectState = 'select-database';
+export const oAuthRedirectStateAtom = atom<OAuthRedirectState|undefined>();
+
 export default function useApi() {
     /**
      * Notion認証を行う
      */
-    const executeOAuth = useCallback(() => {
-        let url = 'https://api.notion.com/v1/oauth/authorize?';
-        url += `client_id=${process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID}`;
-        url += `&redirect_uri=${NotionOAuthRedirectUri}`;
-        url += '&response_type=code';
-        url += '&owner=user';
-        document.location.href = url;
-    }, []);
+    const executeOAuth = useAtomCallback(
+        useCallback((get) => {
+            const state = get(oAuthRedirectStateAtom);
+            let url = 'https://api.notion.com/v1/oauth/authorize?';
+            url += `client_id=${process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID}`;
+            url += `&redirect_uri=${NotionOAuthRedirectUri}`;
+            url += '&response_type=code';
+            url += '&owner=user';
+            if (state) {
+                url += `&state=${state}`;
+            }
+            document.location.href = url;
+        }, [])
+    )
     
     /**
      * 指定のワークスペース用のtokenを返す。
@@ -75,6 +85,7 @@ export default function useApi() {
         }, [])
     )
 
+    const { t } = useTranslation();
     /**
      * 
      * @param action 
@@ -88,7 +99,8 @@ export default function useApi() {
         const token = getToken(workspaceId);
         if (token === undefined && process.env.NEXT_PUBLIC_NOTION_API_CLIENT_ID) {
             // TODO: トークン取得
-            throw new Error('not found token');
+            console.log('not find token')
+            throw new Error(t('Getting_Access_Token'));
         }
 
         const result = await axios.post(`/api/${action}`, {
@@ -102,10 +114,16 @@ export default function useApi() {
         const apiRes = result.data as RESULT;
         return apiRes;
 
-    }, [getToken]);
+    }, [getToken, t]);
 
     const getWorkspaceList = useAtomCallback(
         useCallback(async(get) => {
+            const hasToken = get(hasTokenAtom);
+            if (!hasToken) {
+                // トークン取得
+                executeOAuth();
+                return [];
+            }
             const resultList = [] as WorkspaceInfo[];
             // アクセス可能な全てのワークスペースのDB一覧を取得する
             const oAuthInfos = get(myOAuthInfosAtom);
@@ -139,24 +157,6 @@ export default function useApi() {
                         name: res.title,
                         icon: res.icon,
                         properties: Object.values(res.properties),
-                        // Object.values(res.properties).map(prop => {
-                        //     let relation;
-                        //     if (prop.type === 'relation') {
-                        //         const relDb = dbInfos.find(r => r.id === prop.relation?.database_id);
-                        //         const relProp = relDb?.properties[prop.relation?.synced_property_name as string];
-                        //         relation = {
-                        //             dbId: relDb?.id as string,
-                        //             propertyId: relProp?.id as string,
-                        //         }
-                        //     }
-                        //     return {
-                        //         id: prop.id,
-                        //         name: prop.name,
-                        //         type: prop.type,
-                        //         isUse: false,
-                        //         relation,
-                        //     } as Property;
-                        // }),
                     };
                 });
     
@@ -167,7 +167,7 @@ export default function useApi() {
                 });
             }
             return resultList;
-        }, [apiAction])
+        }, [apiAction, executeOAuth])
     
     )
     

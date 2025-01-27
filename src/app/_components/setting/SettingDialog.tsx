@@ -1,13 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Modal } from 'react-bootstrap';
-import { hasTokenAtom } from '@/app/_util/useApi';
 import { useTranslation } from 'react-i18next';
 import * as EventController from '@/app/_util/EventController';
 import { Confirm } from '../Confirm';
 import { useAtom } from 'jotai';
-import { dataSetsAtom } from '@/app/_jotai/useData';
 import useData from '@/app/_jotai/useData';
-import { useAtomCallback } from 'jotai/utils';
+import { atomWithStorage, useAtomCallback } from 'jotai/utils';
 import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import SelectDatasetBody from './SelectDatasetBody';
 import SelectDatabaseBody from './SelectDatabaseBody';
@@ -38,68 +36,24 @@ export type DatasetInfo = {
     id: string;
     networkDefine: NetworkDefine;  // 編集の場合、変更前のものをセットする
 }
+
+// 登録・編集対象のデータセット情報
+// OAuthリダイレクトされた場合に復帰できるようにstorage保管している
+const selectedDatasetIdAtom = atomWithStorage<string|undefined>('selectedDatasetId', undefined, undefined, { getOnInit: true });
+
 export const SettingDialog = createCallable<void, void>(({ call }) => {
-    const [ step, setStep ] = useState<Step>(Step.SelectDataset);
-    // 登録・編集対象のデータセット情報
-    const [ selectDataset, setSelectDataset ] = useState<DatasetInfo|undefined>();
+    const [ selectedDatasetId, setSelectedDatasetId ] = useAtom(selectedDatasetIdAtom);
+    const [ step, setStep ] = useState<Step>(selectedDatasetId ? Step.SelectDb : Step.SelectDataset);
     const [ workData, setWorkData ] = useState<WorkData|undefined>();
-    const [ datasets ] = useAtom(dataSetsAtom);
     const { t } = useTranslation();
-    const [ hasToken ] = useAtom(hasTokenAtom);
     const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
 
-    const onHide = useCallback(() => {
-        call.end();
-    }, [call]);
-
-    console.log('hasToken', hasToken)
-
-    // 初期化
-    // TODO: 記述場所見直し
-    useEffect(() => {
-        console.log('initialize');
-        if (step !== Step.SelectDataset) {
-            // 以前の状態が残っている場合
-            console.log('step', step);
-            return;
-        }
-        if (datasets.length === 0) {
-            // Datasetが０個の場合は、SelectDbから
-            setSelectDataset(undefined);
-            setStep(Step.SelectDb);
-        } else {
-            setSelectDataset(undefined);
-            setStep(Step.SelectDataset);
-        }
-        // check token
-        // console.log('hasToken', hasToken)
-        if (!hasToken) {
-            // executeOAuth();
-            return;
-        }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // useEffect(() => {
-    //     console.log('hasToken', hasToken)
-    // }, [hasToken])
-
-    // const dbList = useMemo(() => {
-    //     const target = workspaceList.find(ws => ws.workspaceId === networkDefine?.workspaceId);
-    //     return target ? target.dbDefines : [];
-    // }, [workspaceList, networkDefine]);
-
-    // 直接呼ぶと、新しいdatasetが追加された状態になっていないので、reserveフラグ経由で呼び出す
-    // TODO: 見直し
-    const [reserveLoadLatestData, setReserveLoadLatestData] = useState(false);
-    useEffect(() => {
-        if (reserveLoadLatestData) {
-            loadLatestData();
-            setReserveLoadLatestData(false);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [reserveLoadLatestData]);
+    const onHide = useAtomCallback(
+        useCallback((get, set) => {
+            set(selectedDatasetIdAtom, undefined);
+            call.end();
+        }, [call])
+    );
 
     // 最新のストア状態で実行したいので、useCallbackは使用していない
     const loadLatestData = useCallback(async() => {
@@ -132,7 +86,10 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
     });
     const handleSave = useAtomCallback(
         useCallback((get, set, targets: PropertyKey[]) => {
-            if (!workData) return;
+            if (!workData || !selectedDatasetId) {
+                console.warn('想定外', workData, selectedDatasetId);
+                return;
+            }
 
             const dbList = networkDefine.dbList.map((item): DbDefine => {
                 return {
@@ -154,7 +111,7 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
             }
 
             // 定義保存 & カレントデータセット切り替え
-            if (!selectDataset) {
+            if (selectedDatasetId === 'new') {
                 // 新規追加
                 const id = createDataset(newNetWorkDefine);
                 set(currentDatasetIdAtom, id)
@@ -162,39 +119,25 @@ export const SettingDialog = createCallable<void, void>(({ call }) => {
                 // TODO: スタイル情報をマージ
                 // 更新
                 updateNetworkDefine({
-                    datasetId: selectDataset.id,
+                    datasetId: selectedDatasetId,
                     networkDefine: newNetWorkDefine,
                     dataClear: true,
                 })
-                set(currentDatasetIdAtom, selectDataset.id)
+                set(currentDatasetIdAtom, selectedDatasetId)
             }
             // 最新データ取得
-            setReserveLoadLatestData(true);
+            loadLatestData();
+            // setReserveLoadLatestData(true);
     
+            set(selectedDatasetIdAtom, undefined);
             call.end();
-        }, [call, createDataset, networkDefine.dbList, networkDefine.relationList, networkDefine.workspaceId, selectDataset, updateNetworkDefine, workData])
+        }, [call, createDataset, loadLatestData, networkDefine.dbList, networkDefine.relationList, networkDefine.workspaceId, selectedDatasetId, updateNetworkDefine, workData])
     )
 
-    const handleNextSelectDataset = useCallback((dataset?: DatasetInfo) => {
-        setSelectDataset(dataset);
-        if (dataset) {
-            const networkDefine = dataset.networkDefine;
-            setWorkData({
-                baseDb: {
-                    dbId: networkDefine.dbList[0].id,
-                    workspaceId: networkDefine.workspaceId,
-                },
-                targetWorkspaceDbList: networkDefine.dbList,
-                targetRelations: networkDefine.relationList.map(rel => {
-                    return {
-                        dbId: rel.from.dbId,
-                        propertyId: rel.from.propertyId,
-                    }
-                })
-            })
-        }
+    const handleNextSelectDataset = useCallback((datasetId: string) => {
+        setSelectedDatasetId(datasetId);
         setStep(cur => cur + 1);
-    }, [])
+    }, [setSelectedDatasetId])
 
     const handleNextSelectDatabase = useCallback((targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => {
         setWorkData(cur => {

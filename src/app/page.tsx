@@ -10,6 +10,7 @@ import { loadingInfoAtom, visitedAtom } from "./_jotai/operation";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Graph from "./_components/chart/Graph";
+import { oAuthRedirectStateAtom } from "./_util/useApi";
 
 // const Graph = dynamic(() => import("./_components/chart/Graph"), { ssr: false });
 const ControlPanel = dynamic(() => import("./_components/panel/ControlPanel"), { ssr: false });
@@ -22,15 +23,16 @@ export default function Home() {
         useCallback((get) => {
             // 最初の訪問時はWelcome画面に遷移
             const visited = get(visitedAtom);
-            console.log('visited', visited)
             if (!visited) {
                 router.push('/welcome');
                 return;
             }
-            // 設定画面の情報があるなら、設定画面を開く
-            // if (hasData) {
-            //     SettingDialog.call();
-            // }
+            // OAuthのリダイレクトStateがあるなら遷移する
+            const oAuthRedirectState = get(oAuthRedirectStateAtom);
+            if (oAuthRedirectState === 'select-database') {
+                // 設定画面を開く
+                SettingDialog.call();
+            }
             const datasets = get(dataSetsAtom);
             if (datasets.length === 0) {
                 // データセットが存在しない場合も、設定画面を開く

@@ -9,10 +9,9 @@ import { currentDatasetIdAtom } from '@/app/_jotai/operation';
 import { DataSet, DialogMode, DialogResult } from '@/app/_types/types';
 import useData from '@/app/_jotai/useData';
 import { Confirm } from '../Confirm';
-import { DatasetInfo } from './SettingDialog';
 
 type Props = {
-    onNext: (dataset?: DatasetInfo) => void;
+    onNext: (datasetId: string) => void;   // 新規の場合はnew
     onClose: () => void;
 }
 
@@ -69,28 +68,9 @@ export default function SelectDatasetBody(props: Props) {
         if (!tempSelectDatasetId) {
             return;
         }
-        const networkDefine = (() => {
-            if (tempSelectDatasetId === 'new') {
-                return;
-            } else {
-                const dataset = datasets.find(dataset => dataset.id === tempSelectDatasetId);
-                if (!dataset) {
-                    console.warn('Datasetなし');
-                    return;
-                }
-                return Object.assign({}, dataset.networkDefine);
-            }
-        })();
-        if (networkDefine) {
-            props.onNext({
-                id: tempSelectDatasetId,
-                networkDefine,
-            });
-        } else {
-            props.onNext();
-        }
+        props.onNext(tempSelectDatasetId);
 
-    }, [props, datasets, tempSelectDatasetId]);
+    }, [props, tempSelectDatasetId]);
 
 
     const { t } = useTranslation();
