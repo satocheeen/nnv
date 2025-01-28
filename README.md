@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <h1>
+    Notion Network Viewer
+  </h1>
+  <img src="https://img.shields.io/badge/-Next.js-grey.svg?logo=nextdotjs&flat" alt="Next.js" />
+  <img src="https://img.shields.io/badge/-NotionAPI-gray.svg?logo=notion&flat" alt="Notion API" />
+  <img src="https://img.shields.io/badge/-Cytoscape-gray.svg?logo=cytoscapedotjs&flat" alt="Cytoscape" />
+  <img src="https://img.shields.io/badge/-TypeScript-gray.svg?logo=typescript&flat" alt="TypeScript" />
 
-## Getting Started
+  <img src="./public/nnv-img.png" width="400" />
+  <p>
+    <a href="https://nnv.satocheeen.com/">
+        Web Site
+    </a>
+  </p>
+</div>
 
-First, run the development server:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+
+
+## Overview
+リレーション項目で繋がった複数のNotionデータベースの関連を可視化するシステムです。
+
+![Sample Image](/public/img/clothes-nnv.png)
+
+### Main Features
+
+- リレーション項目を持つNotionデータベースを図示
+- ページ間のリレーション作成
+- 新規ページ作成
+- フィルタ機能
+
+
+## Quick setup
 ```
+npm i
+npm run dev
+```
+## Environments
+### NotionAPI関連
+本システムでは、NotionAPIを利用しています。 
+NotionAPIを使用するためのIntegrationを発行して、環境変数に設定してください。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+参考) NotionAPI 公式ドキュメント  
+https://developers.notion.com/docs/getting-started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Internal Integration、Public Integration の両方に対応しています。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### Internal Integration を用いる場合
+| 環境変数 | 必須 | 設定値 |
+|--|--|--|
+| NOTION_INTERNAL_KEY | 必須 | NotionAPIのインテグレーションキー  |
 
-## Learn More
+#### Public Integrationを用いる場合
+| 環境変数 | 必須 | 設定値 |
+|--|--|--|
+| NEXT_PUBLIC_NOTION_API_CLIENT_ID | 必須 | NotionAPI用のClientID |
+| NOTION_SECRET_KEY | 必須 | NotionAPI用のシークレットキー |
+| NEXT_PUBLIC_NOTION_OAUTH_REDIRECT_URL | 任意 | NotionのOAuth認証時のリダイレクト先。未指定時は`${protocol}://${host}/callback`が設定される。開発環境でのOAuth挙動確認時に利用するために用意。
 
-To learn more about Next.js, take a look at the following resources:
+## Version History
+### v1.1.0-alpha (2025/01/28)
+- Next.jsで再構築
+- 状態管理をReduxからJotaiに変更
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### v1.0.3 (2022/06/09) ⇒ 現在の本番環境Ver.
+- URLプロパティについて、コンテキストメニューからURLに遷移できるように対応
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### v1.0.0 (2022/03/21)
+- システム一般公開
+- React + Express + Docker の構成
