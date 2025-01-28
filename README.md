@@ -2,10 +2,12 @@
   <h1>
     Notion Network Viewer
   </h1>
-  <img src="https://img.shields.io/badge/-Next.js-grey.svg?logo=nextdotjs&flat" alt="Next.js" />
-  <img src="https://img.shields.io/badge/-NotionAPI-gray.svg?logo=notion&flat" alt="Notion API" />
-  <img src="https://img.shields.io/badge/-Cytoscape-gray.svg?logo=cytoscapedotjs&flat" alt="Cytoscape" />
-  <img src="https://img.shields.io/badge/-TypeScript-gray.svg?logo=typescript&flat" alt="TypeScript" />
+  <div>
+    <img src="https://img.shields.io/badge/-Next.js-grey.svg?logo=nextdotjs&flat" alt="Next.js" />
+    <img src="https://img.shields.io/badge/-NotionAPI-gray.svg?logo=notion&flat" alt="Notion API" />
+    <img src="https://img.shields.io/badge/-Cytoscape-gray.svg?logo=cytoscapedotjs&flat" alt="Cytoscape" />
+    <img src="https://img.shields.io/badge/-TypeScript-gray.svg?logo=typescript&flat" alt="TypeScript" />
+  </div>
 
   <img src="./public/nnv-img.png" width="400" />
   <p>
@@ -15,14 +17,10 @@
   </p>
 </div>
 
-
-
-
-
 ## Overview
 リレーション項目で繋がった複数のNotionデータベースの関連を可視化するシステムです。
 
-![Sample Image](/public/img/clothes-nnv.png)
+<img src="./public/img/clothes-nnv.png" alt="Sample Image" width="600" />
 
 ### Main Features
 
