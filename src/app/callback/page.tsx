@@ -10,10 +10,10 @@ import { OAuthRedirectState } from "../_util/useApi";
 export default async function CallbackPage({
     searchParams,
 } : {
-    searchParams: { 
+    searchParams: Promise<{ 
         code?: string;
         state?: string;
-     };
+     }>;
 }) {
     const { code, state } = await searchParams;
 

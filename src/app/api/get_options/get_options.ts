@@ -16,9 +16,6 @@ export const getOptions = async(token: string, param: GetOptionsParam): Promise<
     const filterPropOptions = Object.values(dbDef.properties)
     .filter(prop => {
         const isFilterProp = param.dbDefine.properties.some(paramProp => {
-            if (!paramProp.isUse) {
-                return false;
-            }
             return paramProp.id === prop.id;
         });
         return isFilterProp;
