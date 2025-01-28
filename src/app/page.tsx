@@ -22,40 +22,42 @@ export default function Home() {
     const router = useRouter();
 
     const checkShowSettingDialog = useAtomCallback(
-        useCallback(async(get, set) => {
-            // 最初の訪問時はWelcome画面に遷移
-            const visited = get(visitedAtom);
-            if (!visited) {
-                router.push('/welcome');
-                return;
-            }
+        useCallback(async(get) => {
             // OAuthのリダイレクトStateがあるなら遷移する
             const oAuthRedirectState = get(oAuthRedirectStateAtom);
             if (oAuthRedirectState?.state === 'select-database') {
                 // 設定画面を開く
-                settingDlgPromise = SettingDialog.call({
+                return SettingDialog.call({
                     datasetId: oAuthRedirectState.datasetId,
                 });
-                set(oAuthRedirectStateAtom, undefined);
-                await settingDlgPromise;
-                settingDlgPromise = null;
-                return;
             }
             const datasets = get(dataSetsAtom);
-            if (datasets.length === 0 && settingDlgPromise === null) {
+            if (datasets.length === 0) {
                 // データセットが存在しない場合も、設定画面を開く
-                SettingDialog.call({
+                return SettingDialog.call({
                     datasetId: 'new',
                 });
-                return;
             }
-        }, [router])
+        }, [])
     )
     
+    const [ visited ] = useAtom(visitedAtom);
     // 起動時
     useEffect(() => {
-        checkShowSettingDialog();
-    }, [checkShowSettingDialog]);
+        // 最初の訪問時はWelcome画面に遷移
+        if (!visited) {
+            router.push('/welcome');
+            return;
+        }
+        setTimeout(async() => {
+            // ダイアログの二重起動を防ぐ
+            if (settingDlgPromise) return;
+            settingDlgPromise = checkShowSettingDialog();
+            await settingDlgPromise;
+            settingDlgPromise = null;
+        }, 500)
+
+    }, [checkShowSettingDialog, router, visited]);
 
     const [ loadingInfo ] = useAtom(loadingInfoAtom);
 

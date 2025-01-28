@@ -83,7 +83,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
         } else {
             setOAuthRedirectState(undefined);
         }
-    })
+    }, { immediate: true })
 
     const { networkDefine } = useSetting({
         workData: {
