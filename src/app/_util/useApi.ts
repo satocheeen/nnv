@@ -12,7 +12,6 @@ import { CreatePageParam, CreatePageResult } from "../api/create_page/types";
 import { CreateRelationParam, CreateRelationResult } from "../api/create_relation/types";
 import { RemoveRelationParam } from "../api/remove_relation/types";
 import { atomWithStorage, useAtomCallback } from "jotai/utils";
-import { NotionOAuthRedirectUri } from "../api/common";
 import { useTranslation } from "react-i18next";
 
 type NotionOAuthInfo = {
@@ -49,6 +48,8 @@ export type OAuthRedirectState = {
     datasetId: string;
 }
 export const oAuthRedirectStateAtom = atom<OAuthRedirectState|undefined>();
+
+export const NotionOAuthRedirectUri = process.env.NEXT_PUBLIC_NOTION_OAUTH_REDIRECT_URL || (typeof document !== undefined ? `${document.location.protocol}://${document.location.host}/callback/` : '');
 
 export default function useApi() {
     /**

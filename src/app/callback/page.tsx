@@ -1,8 +1,8 @@
 import axios from "axios";
 import { NotionOauth } from "../_types/types";
-import { NotionOAuthRedirectUri, OAuth } from "../api/common";
+import { OAuth } from "../api/common";
 import Redirector from "./Redirector";
-import { OAuthRedirectState } from "../_util/useApi";
+import { NotionOAuthRedirectUri, OAuthRedirectState } from "../_util/useApi";
 
 /**
  * Notionからのアクセストークンのリダイレクトページ
