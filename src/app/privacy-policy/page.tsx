@@ -1,3 +1,4 @@
+"use client"
 import MarkdownViewer from '../_components/common/MarkdownViewer';
 
 export default function PrivacyPolicyPage() {
