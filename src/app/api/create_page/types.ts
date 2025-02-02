@@ -1,4 +1,4 @@
-import { DbDefine } from "@/app/_types/types";
+import { type DbDefine } from "@/app/_types/types";
 
 export type CreatePageParam = {
     dbDefine: DbDefine;
