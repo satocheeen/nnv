@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotionKey } from "../common";
 import { createRelation } from "./create_relation";
 
+export const runtime = 'edge';
+
 export async function POST(
     request: NextRequest,
 ) {

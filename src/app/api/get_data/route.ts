@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotionKey } from "../common";
 import { getData } from "./get_data";
 
+export const runtime = 'edge';
+
 export async function POST(
     request: NextRequest,
 ) {
