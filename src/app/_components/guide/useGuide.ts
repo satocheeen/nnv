@@ -1,7 +1,17 @@
 import { atom } from "jotai";
-import { GuideKind, TempGuide } from "../../_types/types";
+import { TempGuide } from "../../_types/types";
 import { atomWithStorage, useAtomCallback } from "jotai/utils";
 import { useCallback } from "react";
+
+/**
+ * 操作説明
+ * lang.tsのGuide_XXXXが対応する
+ */
+export enum GuideKind {
+    NodeClick = 'NodeClick',
+    CoreClick = 'CoreClick',
+    EdgeClick = 'EdgeClick',
+}
 
 export const operatedGuidesAtom = atomWithStorage<GuideKind[]>('operatedGuides', []);
 

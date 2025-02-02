@@ -4,11 +4,12 @@ import cycxtmenu, { Command } from 'cytoscape-cxtmenu';
 import edgehandles from 'cytoscape-edgehandles';
 import chartStyles from './styles';
 import { TFunction } from 'i18next';
-import { DataSet, Edge, NodeItem, RelationDefineKey, GuideKind, TempGuideKind, DbDefine } from '../../_types/types';
+import { DataSet, Edge, NodeItem, RelationDefineKey, TempGuideKind, DbDefine } from '../../_types/types';
 import * as EventController from '../../_util/EventController';
 import { getEdgeKey, getRelationKey } from '../../_util/utility';
 import { Colors } from '@/app/_define/const';
 import { Filter } from '@/app/_jotai/useFilter';
+import { GuideKind } from '../guide/useGuide';
 
 cytoscape.use(cycxtmenu);
 cytoscape.use(edgehandles);

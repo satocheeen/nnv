@@ -1,16 +1,6 @@
 import { Colors } from "../_define/const";
 import { NotionProperty } from "../api/get_dblist/types";
 
-/**
- * 操作説明
- * lang.tsのGuide_XXXXが対応する
- */
-export enum GuideKind {
-    NodeClick = 'NodeClick',
-    CoreClick = 'CoreClick',
-    EdgeClick = 'EdgeClick',
-}
-
 export type NotionOauth = {
     access_token: string;
     bot_it: string;

@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import styles from './Guide.module.scss';
 import useMedia from 'use-media';
 import { useAtom } from 'jotai';
-import useGuide, { operatedGuidesAtom, tempGuideAtom } from './useGuide';
-import { GuideKind } from '@/app/_types/types';
+import useGuide, { GuideKind, operatedGuidesAtom, tempGuideAtom } from './useGuide';
 
 /**
  * 操作説明パネル
