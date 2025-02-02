@@ -1,6 +1,6 @@
 import { Client } from '@notionhq/client';
 import { CreatePageParam } from './types';
-import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
+// import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 
 export const createPage = async(token: string, param: CreatePageParam) => {
     try {
@@ -11,29 +11,30 @@ export const createPage = async(token: string, param: CreatePageParam) => {
         const dbinfo = await notion.databases.retrieve({
             database_id: param.dbDefine.id,
         });
-        const titleColName = Object.values(dbinfo.properties).find(prop => prop.type === 'title')?.name as string;
-        const properties = {} as CreatePageParameters['properties'];
-        properties[titleColName] = {
-            title: [
-                {
-                    type: 'text',
-                    text: {
-                        content: param.title,
-                    }
-                }
-            ]
-        };
+        console.log(dbinfo)
+        // const titleColName = Object.values(dbinfo.properties).find(prop => prop.type === 'title')?.name as string;
+        // const properties = {} as CreatePageParameters['properties'];
+        // properties[titleColName] = {
+        //     title: [
+        //         {
+        //             type: 'text',
+        //             text: {
+        //                 content: param.title,
+        //             }
+        //         }
+        //     ]
+        // };
     
-        const result = await notion.pages.create({
-            parent: {
-                database_id: param.dbDefine.id,
-            },
-            properties,
-        });
+        // const result = await notion.pages.create({
+        //     parent: {
+        //         database_id: param.dbDefine.id,
+        //     },
+        //     properties,
+        // });
 
         return {
             result: 'ok',
-            id: result.id,
+            id: '', //result.id,
         };
 
     } catch(e) {
