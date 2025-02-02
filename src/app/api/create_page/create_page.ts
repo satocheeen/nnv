@@ -1,6 +1,6 @@
 import { Client } from '@notionhq/client';
 import { type CreatePageParam } from './types';
-import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
+import { type CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 
 export const createPage = async(token: string, param: CreatePageParam) => {
         try {
