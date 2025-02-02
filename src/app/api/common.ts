@@ -4,4 +4,4 @@ export const OAuth = {
     secret: process.env.NOTION_SECRET_KEY || ''
 }
    
-export const NotionOAuthRedirectUri = process.env.NEXT_PUBLIC_NOTION_OAUTH_REDIRECT_URL || `${document.location.protocol}://${document.location.host}/callback/`;
+export const NotionOAuthRedirectUri = process.env.NEXT_PUBLIC_NOTION_OAUTH_REDIRECT_URL || typeof document !== undefined ? `${document.location.protocol}://${document.location.host}/callback/` : '';
