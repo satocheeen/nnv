@@ -66,7 +66,9 @@ export default function useApi() {
             if (state) {
                 url += `&state=${JSON.stringify(state)}`;
             }
-            document.location.href = url;
+            if (document !== undefined) {
+                document.location.href = url;
+            }
         }, [])
     )
     
