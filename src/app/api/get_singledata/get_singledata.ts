@@ -1,6 +1,6 @@
 import { Client } from "@notionhq/client";
-import { GetSingleDataParam, GetSingleDataResult } from "./types";
-import { OptionItem } from "@/app/_types/types";
+import { type GetSingleDataParam, type GetSingleDataResult } from "./types";
+import { type OptionItem } from "@/app/_types/types";
 import { createItem } from "../get_data/get_data";
 
 export const getSingleData = async(token: string, param: GetSingleDataParam): Promise<GetSingleDataResult> => {
