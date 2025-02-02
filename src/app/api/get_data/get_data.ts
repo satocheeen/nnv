@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import { type PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
 import { GetDataItem, GetDataParam, GetDataResult } from './types';
 import { DbDefineWithRelation } from '@/app/_types/types';
 

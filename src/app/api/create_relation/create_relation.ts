@@ -1,6 +1,6 @@
 import { Client } from '@notionhq/client';
-import { CreateRelationParam } from './types';
-import { UpdatePageParameters } from '@notionhq/client/build/src/api-endpoints';
+import { type CreateRelationParam } from './types';
+import { type UpdatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 
 export const createRelation = async(token: string, param: CreateRelationParam) => {
     try {
