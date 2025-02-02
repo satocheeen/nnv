@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { DbInfo } from './types';
+import { type DbInfo } from './types';
 
 /**
  * DB一覧を返す.

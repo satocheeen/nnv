@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { FilterPropertyDefine, GetOptionsParam, GetOptionsResult } from './types';
+import { type FilterPropertyDefine, type GetOptionsParam, type GetOptionsResult } from './types';
 
 /**
  * 選択項目の選択肢一覧を返す

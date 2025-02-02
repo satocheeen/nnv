@@ -1,7 +1,7 @@
 import { Client } from '@notionhq/client';
 import { type PageObjectResponse } from '@notionhq/client/build/src/api-endpoints';
-import { GetDataItem, GetDataParam, GetDataResult } from './types';
-import { DbDefineWithRelation } from '@/app/_types/types';
+import { type GetDataItem, type GetDataParam, type GetDataResult } from './types';
+import { type DbDefineWithRelation } from '@/app/_types/types';
 
 export const getData = async(token: string, param: GetDataParam): Promise<GetDataResult> => {
     const notion = new Client({

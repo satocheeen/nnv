@@ -1,5 +1,5 @@
 import { Client } from "@notionhq/client";
-import { GetDeletedParam, GetDeletedResult } from "./types";
+import { type GetDeletedParam, type GetDeletedResult } from "./types";
 
 /**
  * 削除されたアイテム情報を返す

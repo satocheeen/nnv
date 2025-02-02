@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client';
-import { RemoveRelationParam } from './types';
+import { type RemoveRelationParam } from './types';
 import { type UpdatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 
 export const removeRelation = async(token: string, param: RemoveRelationParam) => {
