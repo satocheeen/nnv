@@ -2,7 +2,8 @@ import axios from "axios";
 import { NotionOauth } from "../_types/types";
 import { OAuth } from "../api/common";
 import Redirector from "./Redirector";
-import { NotionOAuthRedirectUri, OAuthRedirectState } from "../_util/useApi";
+import { OAuthRedirectState } from "../_util/useApi";
+import { headers } from "next/headers";
 
 /**
  * Notionからのアクセストークンのリダイレクトページ
@@ -22,6 +23,11 @@ export default async function CallbackPage({
             <div>Error</div>
         )
     }
+
+    const h = await headers();
+    const protocol = h.get('x-forwarded-proto');
+    const host = h.get('x-forwarded-host') || h.get('host');
+    const NotionOAuthRedirectUri = process.env.NEXT_PUBLIC_NOTION_OAUTH_REDIRECT_URL || `${protocol}://${host}/callback/`;
 
     // トークン取得
     let oAuthInfo: NotionOauth | undefined;

@@ -49,7 +49,7 @@ export type OAuthRedirectState = {
 }
 export const oAuthRedirectStateAtom = atom<OAuthRedirectState|undefined>();
 
-export const NotionOAuthRedirectUri = process.env.NEXT_PUBLIC_NOTION_OAUTH_REDIRECT_URL || (typeof document !== undefined ? `${document.location.protocol}://${document.location.host}/callback/` : '');
+const NotionOAuthRedirectUri = process.env.NEXT_PUBLIC_NOTION_OAUTH_REDIRECT_URL || (typeof document !== undefined ? `${document.location.protocol}://${document.location.host}/callback/` : '');
 
 export default function useApi() {
     /**
