@@ -5,6 +5,8 @@ import Redirector from "./Redirector";
 import { OAuthRedirectState } from "../_util/useApi";
 import { headers } from "next/headers";
 
+export const runtime = 'edge';
+
 /**
  * Notionからのアクセストークンのリダイレクトページ
  */

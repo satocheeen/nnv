@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation';
 import { useAtomCallback } from 'jotai/utils';
 import { visitedAtom } from '../_jotai/operation';
 
+export const runtime = 'edge';
+
 export default function Welcome() {
     const router = useRouter();
     const onStart = useAtomCallback(

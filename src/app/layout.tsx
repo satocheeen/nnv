@@ -6,6 +6,8 @@ import { headers } from "next/headers";
 
 export const dynamic = 'force-dynamic';
 
+export const runtime = 'edge';
+
 export const generateMetadata = async (): Promise<Metadata> => {
     const h = await headers();
     const protocol = h.get('x-forwarded-proto');
