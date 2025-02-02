@@ -27,10 +27,6 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    if (typeof document === undefined) {
-        return <div />
-    }
-
     return (
         <html>
             <body>
