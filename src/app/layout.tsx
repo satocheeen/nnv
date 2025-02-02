@@ -4,6 +4,8 @@ import CcSettingProvider from "./CcSettingProvider";
 import styles from './layout.module.scss';
 import { headers } from "next/headers";
 
+export const dynamic = 'force-dynamic';
+
 export const generateMetadata = async (): Promise<Metadata> => {
     const h = await headers();
     const protocol = h.get('x-forwarded-proto');
