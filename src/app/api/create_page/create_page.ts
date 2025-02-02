@@ -1,14 +1,14 @@
-// import { Client } from '@notionhq/client';
+import { Client } from '@notionhq/client';
 // import { CreatePageParam } from './types';
 // import { CreatePageParameters } from '@notionhq/client/build/src/api-endpoints';
 
 // export const createPage = async(token: string, param: CreatePageParam) => {
 export const createPage = async(token: string, param: object) => {
         try {
-            console.log(token, param)
-        // const notion = new Client({
-        //     auth: token,
-        // });
+        const notion = new Client({
+            auth: token,
+        });
+        console.log(notion, token, param)
         
         // const dbinfo = await notion.databases.retrieve({
         //     database_id: param.dbDefine.id,
