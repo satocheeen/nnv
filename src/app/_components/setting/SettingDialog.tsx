@@ -106,6 +106,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                     name: item.name,
                     properties: item.properties.filter(prop => {
                         if (!targets) return false;
+                        if (prop.type === 'relation') return true;
                         const hit = targets.some(t => t.dbId === item.id && t.propertyId === prop.id);
                         return hit;
                     }),
