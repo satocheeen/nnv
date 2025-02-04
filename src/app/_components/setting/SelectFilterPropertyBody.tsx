@@ -2,8 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Form, ListGroup, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import styles from './SelectFilterPropertyBody.module.scss';
-import { WorkData } from './SettingDialog';
-import useSetting from './useSetting';
+import useSetting, { WorkSettingInfo } from './useSetting';
 
 export type PropetyKey = {
     dbId: string;
@@ -19,7 +18,7 @@ type SelectPropertyGroup = {
     }[];
 }
 type Props = {
-    workData: WorkData;
+    data: WorkSettingInfo;
     onBack: () => void;
     onSave: (targets: PropetyKey[]) => void;
 }
@@ -27,13 +26,12 @@ type Props = {
  * フィルタに使用する項目を選択する画面
  */
 export default function SelectFilterPropertyBody(props: Props) {
-    const [ selectedProperties, setSelectedProperties ] = useState<PropetyKey[]>(props.workData.targetProperties);
-    const { dbIdsInTargetRelations } = useSetting({
-        workData: props.workData,
-    })
+    const [ selectedProperties, setSelectedProperties ] = useState<PropetyKey[]>(props.data.workData.targetProperties);
+    const { dbIdsInTargetRelations } = useSetting({ data: props.data });
+
     const selectPropertyGroups = useMemo((): SelectPropertyGroup[] => {
         return dbIdsInTargetRelations.map(dbId => {
-            const db = props.workData.targetWorkspaceDbList.find(item => item.id === dbId);
+            const db = props.data.workData.targetWorkspaceDbList.find(item => item.id === dbId);
             if (!db) return;
             return {
                 dbId: db.id,
@@ -50,7 +48,7 @@ export default function SelectFilterPropertyBody(props: Props) {
                                 }),
             }
         }).filter(val => !!val);
-    }, [dbIdsInTargetRelations, props.workData.targetWorkspaceDbList, selectedProperties]);
+    }, [dbIdsInTargetRelations, props.data.workData.targetWorkspaceDbList, selectedProperties]);
 
     const handleChangeProperty = useCallback((dbId: string, propertyId: string, value: boolean) => {
         const index = selectedProperties.findIndex(item => item.dbId === dbId && item.propertyId === propertyId);

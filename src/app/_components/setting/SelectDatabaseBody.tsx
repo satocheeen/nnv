@@ -8,11 +8,10 @@ import useApi from '@/app/_util/useApi';
 import NotionIcon from '../common/NotionIcon';
 import Image from 'next/image';
 import { Confirm } from '../Confirm';
-import { DbKey, WorkData } from './SettingDialog';
+import { DbKey } from './SettingDialog';
 
 type Props = {
     datasetId: string;
-    workData?: WorkData;
     onBack: () => void;
     onNext: (targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => void;
 }
@@ -25,7 +24,7 @@ type Props = {
 export default function SelectDatabaseBody(props: Props) {
     const [workspaceList, setWorkspaceList] = useState([] as WorkspaceInfo[]);
     const { t } = useTranslation();
-    const [selectedDb, setSelectedDb] = useState<DbKey | undefined>(props.workData?.baseDb);
+    const [selectedDb, setSelectedDb] = useState<DbKey | undefined>();
     
     console.log('selectedDb', selectedDb)
     // DB一覧読み込み

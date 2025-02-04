@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { WorkData } from "./SettingDialog";
+import { DbKey, WorkData } from "./SettingDialog";
 import { NetworkDefine } from "@/app/_types/types";
 
 export type RelPropertyInfo = {
@@ -30,15 +30,39 @@ export type DbRelItem = {
 /**
  * WorkDataを元に各種情報を返すフック
  */
+export type WorkSettingInfo = {
+    type: 'edit';
+    baseNetworkDefine: NetworkDefine;   // 定義編集の場合、編集前の定義情報
+    workData: WorkData;                 // 編集中の情報
+} | {
+    type: 'new';
+    baseDb: DbKey;
+    workData: WorkData;                 // 登録中の情報
+}
+
 type Props = {
-    workData: WorkData;
+    data?: WorkSettingInfo;
 }
 export default function useSetting(props: Props) {
+    const baseDb = useMemo(() => {
+        if (!props.data) return;
+        if (props.data.type === 'new') {
+            return props.data.baseDb;
+        } else {
+            const networkDefine = props.data.baseNetworkDefine;
+            return {
+                workspaceId: networkDefine.workspaceId,
+                dbId: networkDefine.dbList[0].id,
+            }
+        }
+    }, [props.data])
+
     /**
      * 指定のDBが保持するリレーション項目の情報を返す
      */
     const getRelationProperies = useCallback((dbId: string): RelPropertyInfo[] => {
-        const target = props.workData.targetWorkspaceDbList.find(db => db.id === dbId);
+        if (!props.data) return [];
+        const target = props.data.workData.targetWorkspaceDbList.find(db => db.id === dbId);
         if (!target) {
             return [];
         }
@@ -52,7 +76,7 @@ export default function useSetting(props: Props) {
                 const relDbId = p.relation.database_id;
                 const relDbPropertyName = p.relation.type === 'dual_property' ? p.relation.dual_property.synced_property_name : p.name;
                 const relDbPropertyId = p.relation.type === 'dual_property' ? p.relation.dual_property.synced_property_id : p.id;
-                const relDb = props.workData.targetWorkspaceDbList.find(db => db.id === relDbId);
+                const relDb = props.data?.workData.targetWorkspaceDbList.find(db => db.id === relDbId);
                 if (!relDb) {
                     console.warn('DBなし', relDbId);
                     return null;
@@ -70,15 +94,18 @@ export default function useSetting(props: Props) {
                 };
             })
             .filter(item => item !== null) as RelPropertyInfo[];
-    }, [props.workData.targetWorkspaceDbList])
+    }, [props.data])
 
     /**
      * targetRelationsで使用されているDB一覧
      */
     const dbIdsInTargetRelations = useMemo(() => {
+        if (!baseDb) return [];
+        if (!props.data) return [];
+
         // selectedされた先のDB
-        const relDbIds = props.workData.targetRelations.map(key => {
-            const target = props.workData.targetWorkspaceDbList.find(item => item.id === key.dbId);
+        const relDbIds = props.data.workData.targetRelations.map(key => {
+            const target = props.data?.workData.targetWorkspaceDbList.find(item => item.id === key.dbId);
             if (!target) return;
             const targetProp = target.properties.find(prop => prop.id === key.propertyId);
             if (targetProp?.type !== 'relation') return;
@@ -86,12 +113,12 @@ export default function useSetting(props: Props) {
         }).reduce((acc, cur) => {
             if (!cur) return acc;
             if (acc.includes(cur)) return acc;
-            if (props.workData.baseDb.dbId === cur) return acc;
+            if (baseDb.dbId === cur) return acc;
             return [...acc, cur];
         }, [] as string[])
         // 基点DB + selectedされた先のDB
-        return [ props.workData.baseDb.dbId, ...relDbIds ];
-    }, [props.workData.baseDb.dbId, props.workData.targetRelations, props.workData.targetWorkspaceDbList])
+        return [ baseDb.dbId, ...relDbIds ];
+    }, [baseDb, props.data])
 
     // 関連するDBたちが持つRelation項目
     const relationItems = useMemo((): DbRelItem[] => {
@@ -131,15 +158,17 @@ export default function useSetting(props: Props) {
 
     }, [dbIdsInTargetRelations, getRelationProperies])
 
-    const networkDefine = useMemo((): NetworkDefine => {
+    const networkDefine = useMemo((): NetworkDefine | undefined => {
+        if (!baseDb) return;
+        if (!props.data) return;
         return {
             dbList: dbIdsInTargetRelations.map(id => {
-                return props.workData.targetWorkspaceDbList.find(item => item.id === id);
+                return props.data?.workData.targetWorkspaceDbList.find(item => item.id === id);
             }).filter(item => !!item),
-            workspaceId: props.workData.baseDb.workspaceId,
+            workspaceId: baseDb.workspaceId,
             relationList: relationItems
             .filter(item => {
-                const isTarget = props.workData.targetRelations.some(target => {
+                const isTarget = props.data?.workData.targetRelations.some(target => {
                     return target.dbId === item.from.dbId && target.propertyId === item.from.propertyId;
                 })
                 return isTarget;
@@ -159,7 +188,7 @@ export default function useSetting(props: Props) {
                 return dbIdsInTargetRelations.includes(item.from.dbId) && dbIdsInTargetRelations.includes(item.to.dbId);
             })
         }
-    }, [dbIdsInTargetRelations, props.workData.baseDb.workspaceId, props.workData.targetRelations, props.workData.targetWorkspaceDbList, relationItems])
+    }, [baseDb, dbIdsInTargetRelations, props.data, relationItems])
 
     return {
         dbIdsInTargetRelations,
