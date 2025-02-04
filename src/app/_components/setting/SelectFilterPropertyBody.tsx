@@ -2,8 +2,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Button, Form, ListGroup, Modal } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import styles from './SelectFilterPropertyBody.module.scss';
-import { WorkData } from './SettingDialog';
-import useSetting from './useSetting';
+import useSetting, { WorkSettingInfo } from './useSetting';
+import { PropertyKey } from '@/app/_types/types';
 
 export type PropetyKey = {
     dbId: string;
@@ -19,7 +19,7 @@ type SelectPropertyGroup = {
     }[];
 }
 type Props = {
-    workData: WorkData;
+    data: WorkSettingInfo;
     onBack: () => void;
     onSave: (targets: PropetyKey[]) => void;
 }
@@ -27,13 +27,25 @@ type Props = {
  * フィルタに使用する項目を選択する画面
  */
 export default function SelectFilterPropertyBody(props: Props) {
-    const [ selectedProperties, setSelectedProperties ] = useState<PropetyKey[]>(props.workData.targetProperties);
-    const { dbIdsInTargetRelations } = useSetting({
-        workData: props.workData,
-    })
+    const { dbIdsInTargetRelations, targetWorkspaceDbList } = useSetting({ data: props.data });
+    const [ selectedProperties, setSelectedProperties ] = useState<PropetyKey[]>(
+        props.data.type === 'edit'
+        ? props.data.baseNetworkDefine.dbList.reduce((acc, cur) => {
+            const propList = cur.properties.map((prop): PropertyKey => {
+                return {
+                    dbId: cur.id,
+                    propertyId: prop.id,
+                }
+            })
+            return [...acc, ...propList];
+        }, [] as PropetyKey[])
+        : []
+    );
+
     const selectPropertyGroups = useMemo((): SelectPropertyGroup[] => {
         return dbIdsInTargetRelations.map(dbId => {
-            const db = props.workData.targetWorkspaceDbList.find(item => item.id === dbId);
+            const db = targetWorkspaceDbList?.find(item => item.id === dbId);
+            console.log('db', db)
             if (!db) return;
             return {
                 dbId: db.id,
@@ -50,7 +62,7 @@ export default function SelectFilterPropertyBody(props: Props) {
                                 }),
             }
         }).filter(val => !!val);
-    }, [dbIdsInTargetRelations, props.workData.targetWorkspaceDbList, selectedProperties]);
+    }, [dbIdsInTargetRelations, selectedProperties, targetWorkspaceDbList]);
 
     const handleChangeProperty = useCallback((dbId: string, propertyId: string, value: boolean) => {
         const index = selectedProperties.findIndex(item => item.dbId === dbId && item.propertyId === propertyId);

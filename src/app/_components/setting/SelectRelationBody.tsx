@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import styles from './SelectRelationBody.module.scss';
 import SettingChart from './SettingChart';
 import { WorkData } from './SettingDialog';
-import useSetting, { DbRelItem } from './useSetting';
+import useSetting, { DbRelItem, WorkSettingInfo } from './useSetting';
 
 export type RelationKey = {
     dbId: string;
@@ -12,7 +12,7 @@ export type RelationKey = {
 }
 
 type Props = {
-    workData: WorkData;
+    data: WorkSettingInfo;
     onBack: () => void;
     onNext: (rels: RelationKey[]) => void;
 }
@@ -22,14 +22,28 @@ type DbRelItemWithSelected = DbRelItem & {
 }
 
 export default function SelectRelationBody(props: Props) {
-    const [ selectedRelations, setSelectedRelations ] = useState<RelationKey[]>(props.workData.targetRelations);
+    const [ selectedRelations, setSelectedRelations ] = useState<RelationKey[]>(
+        props.data.type === 'edit' 
+        ? props.data.baseNetworkDefine.relationList.map(item => {
+            return {
+                dbId: item.from.dbId,
+                propertyId: item.from.propertyId,
+            }
+        })
+        : []
+    );
+
+    const workSettingInfo = useMemo((): WorkSettingInfo => {
+        const workData: WorkData = {
+            targetWorkspaceDbList: props.data.workData.targetWorkspaceDbList,
+            targetRelations: selectedRelations,
+            targetProperties: props.data.workData.targetProperties,
+        };
+        return Object.assign({}, props.data, { workData })
+    }, [props.data, selectedRelations])
 
     const { relationItems, networkDefine } = useSetting({
-        workData: {
-            baseDb: props.workData.baseDb,
-            targetWorkspaceDbList: props.workData.targetWorkspaceDbList,
-            targetRelations: selectedRelations,
-        },
+        data: workSettingInfo,
     })
 
     const relationItemsWithSelected = useMemo(() => {
@@ -94,7 +108,9 @@ export default function SelectRelationBody(props: Props) {
                         })}
                     </tbody>
                 </Table>
-                <SettingChart define={networkDefine} />
+                {networkDefine &&
+                    <SettingChart define={networkDefine} />
+                }
             </Modal.Body>
             <Modal.Footer>
                 <Button disabled={!okable} onClick={()=>props.onNext(selectedRelations)}>

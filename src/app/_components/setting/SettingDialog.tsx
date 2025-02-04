@@ -12,7 +12,7 @@ import SelectRelationBody, { RelationKey } from './SelectRelationBody';
 import SelectFilterPropertyBody from './SelectFilterPropertyBody';
 import { createCallable } from 'react-call';
 import { DbDefine, NetworkDefine, PropertyKey } from '@/app/_types/types';
-import useSetting from './useSetting';
+import useSetting, { WorkSettingInfo } from './useSetting';
 import { oAuthRedirectStateAtom } from '@/app/_util/useApi';
 import { useAtom } from 'jotai';
 import { useWatch } from '@/app/_util/useWatch';
@@ -29,11 +29,9 @@ export type DbKey = {
     dbId: string;
 }
 export type WorkData = {
-    // 基点データベースID
-    baseDb: DbKey;
-    targetWorkspaceDbList: DbDefine[];  // 基点データベースの属するワークスペースに存在するDB一覧
-    targetRelations: RelationKey[];     // 使用するリレーション項目
-    targetProperties: PropertyKey[];  // 使用するフィルタやURL項目
+    targetWorkspaceDbList?: DbDefine[];  // 基点データベースの属するワークスペースに存在するDB一覧
+    targetRelations?: RelationKey[];     // 使用するリレーション項目
+    targetProperties?: PropertyKey[];  // 使用するフィルタやURL項目
 }
 export type DatasetInfo = {
     id: string;
@@ -46,11 +44,36 @@ type Props = {
 export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) => {
     // 登録・編集対象のデータセット情報
     const [ selectedDatasetId, setSelectedDatasetId ] = useState<string|undefined>(datasetId);
-    const [ step, setStep ] = useState<Step>(datasetId ? Step.SelectDb : Step.SelectDataset);
-    const [ workData, setWorkData ] = useState<WorkData|undefined>();
+    const [ step, setStep ] = useState<Step>(datasetId === 'new' ? Step.SelectDb : Step.SelectDataset);
+    const [ workData, setWorkData ] = useState<WorkData>({});
     const { t } = useTranslation();
     const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
 
+    // 編集前のNetworkDefine情報
+    const [ datasets ] = useAtom(dataSetsAtom);
+    const baseNetworkDefine = useMemo(() => {
+        const target = datasets.find(item => item.id === selectedDatasetId);
+        return target?.networkDefine;
+    }, [datasets, selectedDatasetId])
+
+    const [ baseDb, setBaseDb ] = useState<DbKey|undefined>();
+    const workSettingInfo = useMemo((): WorkSettingInfo | undefined => {
+        if (baseNetworkDefine) {
+            return {
+                type: 'edit',
+                baseNetworkDefine,
+                workData,
+            }
+        } else {
+            return {
+                type: 'new',
+                baseDb,
+                workData,
+            }
+        }
+    }, [baseDb, baseNetworkDefine, workData])
+    
+    
     // 最新のストア状態で実行したいので、useCallbackは使用していない
     const loadLatestData = useCallback(async() => {
         // 最新データ取得
@@ -87,16 +110,11 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
     }, { immediate: true })
 
     const { networkDefine } = useSetting({
-        workData: {
-            baseDb: workData?.baseDb ?? { dbId: '', workspaceId: '' },
-            targetRelations: workData?.targetRelations ?? [],
-            targetWorkspaceDbList: workData?.targetWorkspaceDbList ?? [],
-            targetProperties: workData?.targetProperties ?? [],
-        }
+        data: workSettingInfo,
     });
     const handleSave = useAtomCallback(
         useCallback((get, set, targets: PropertyKey[]) => {
-            if (!workData || !selectedDatasetId) {
+            if (!workData || !selectedDatasetId || !networkDefine) {
                 console.warn('想定外', workData, selectedDatasetId);
                 return;
             }
@@ -140,45 +158,21 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
             loadLatestData();
     
             call.end();
-        }, [call, createDataset, loadLatestData, networkDefine.dbList, networkDefine.relationList, networkDefine.workspaceId, selectedDatasetId, updateNetworkDefine, workData])
+        }, [call, createDataset, loadLatestData, networkDefine, selectedDatasetId, updateNetworkDefine, workData])
     )
 
     const updateWorkDataByDatasetId = useAtomCallback(
         useCallback((get, set, datasetId: string) => {
             const datasets = get(dataSetsAtom);
             const target = datasets.find(item => item.id === datasetId);
-            console.log('setWorkData', target)
-            if (target) {
-                setWorkData({
-                    baseDb: {
-                        workspaceId: target.networkDefine.workspaceId,
-                        dbId: target.networkDefine.dbList[0].id,
-                    },
-                    targetWorkspaceDbList: [],
-                    targetRelations: target.networkDefine.relationList.map(item => {
-                        return {
-                            dbId: item.from.dbId,
-                            propertyId: item.from.propertyId,
-                        }
-                    }),
-                    targetProperties: target.networkDefine.dbList.reduce((acc, cur) => {
-                        const propList = cur.properties.map((prop): PropertyKey => {
-                            return {
-                                dbId: cur.id,
-                                propertyId: prop.id,
-                            }
-                        })
-                        console.log('propList', propList)
-                        return [...acc, ...propList];
-                    }, [] as PropertyKey[])
-                })
-            }
-
+            console.log('setWorkData', target);
+            setSelectedDatasetId(datasetId);
         }, [])
     )
 
     const handleNextSelectDataset = useAtomCallback(
         useCallback((get, set, datasetId: string) => {
+            console.log('datasetId', datasetId);
             setStep(cur => cur + 1);
             if (selectedDatasetId === datasetId) return;
             setSelectedDatasetId(datasetId);
@@ -193,12 +187,12 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
     const handleNextSelectDatabase = useCallback((targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => {
         setWorkData(cur => {
             return {
-                baseDb: baseDbKey,
                 targetWorkspaceDbList,
-                targetRelations: cur?.targetRelations ?? [],
-                targetProperties: cur?.targetProperties ?? [],
+                targetRelations: cur?.targetRelations,
+                targetProperties: cur?.targetProperties,
             }
         })
+        setBaseDb(baseDbKey);
         setStep(cur => cur + 1);
     }, [])
 
@@ -209,7 +203,6 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                 return cur;
             }
             return {
-                baseDb: cur.baseDb,
                 targetWorkspaceDbList: cur.targetWorkspaceDbList,
                 targetRelations: rels,
                 targetProperties: cur.targetProperties,
@@ -219,43 +212,43 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
     }, [])
 
     const onBack = useCallback(() => {
-        setStep(step - 1);
-    }, [step, setStep]);
+        setStep(cur => cur -1);
+    }, []);
 
     const body = useMemo(() => {
         switch(step) {
             case Step.SelectDataset:
                 return <SelectDatasetBody onNext={handleNextSelectDataset} onClose={()=>call.end()} />
             case Step.SelectDb:
-                if (!selectedDatasetId) {
-                    console.warn('想定外')
+                if (!workSettingInfo) {
+                    console.warn('想定外 workSettingInfo undefined' )
                     return null;
                 }
                 return <SelectDatabaseBody
                         onNext={handleNextSelectDatabase}
                         onBack={onBack}
-                        datasetId={selectedDatasetId}
-                        workData={workData} />;
+                        data={workSettingInfo}
+                        />;
             case Step.SelectRelationCol:
-                if (!workData) {
+                if (!workSettingInfo) {
                     console.warn('想定外')
                     return null;
                 }
                 return <SelectRelationBody
-                        workData={workData}
+                        data={workSettingInfo}
                         onNext={handleNextSelectRealtion}
                         onBack={onBack} />;
             case Step.SelectFilterCol:
-                if (!workData) {
+                if (!workSettingInfo) {
                     console.warn('想定外')
                     return null;
                 }
                 return <SelectFilterPropertyBody
-                        workData={workData}
+                        data={workSettingInfo}
                         onSave={handleSave}
                         onBack={onBack} />
         }
-    }, [step, handleNextSelectDataset, selectedDatasetId, handleNextSelectDatabase, onBack, workData, handleNextSelectRealtion, handleSave, call])
+    }, [step, handleNextSelectDataset, selectedDatasetId, handleNextSelectDatabase, onBack, workSettingInfo, handleNextSelectRealtion, handleSave, call])
 
     return (
         <Modal show onHide={()=>call.end()} backdrop="static">
