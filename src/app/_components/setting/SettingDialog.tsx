@@ -33,6 +33,7 @@ export type WorkData = {
     baseDb: DbKey;
     targetWorkspaceDbList: DbDefine[];  // 基点データベースの属するワークスペースに存在するDB一覧
     targetRelations: RelationKey[];     // 使用するリレーション項目
+    targetProperties: PropertyKey[];  // 使用するフィルタやURL項目
 }
 export type DatasetInfo = {
     id: string;
@@ -90,6 +91,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
             baseDb: workData?.baseDb ?? { dbId: '', workspaceId: '' },
             targetRelations: workData?.targetRelations ?? [],
             targetWorkspaceDbList: workData?.targetWorkspaceDbList ?? [],
+            targetProperties: workData?.targetProperties ?? [],
         }
     });
     const handleSave = useAtomCallback(
@@ -159,6 +161,16 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                             propertyId: item.from.propertyId,
                         }
                     }),
+                    targetProperties: target.networkDefine.dbList.reduce((acc, cur) => {
+                        const propList = cur.properties.map((prop): PropertyKey => {
+                            return {
+                                dbId: cur.id,
+                                propertyId: prop.id,
+                            }
+                        })
+                        console.log('propList', propList)
+                        return [...acc, ...propList];
+                    }, [] as PropertyKey[])
                 })
             }
 
@@ -184,6 +196,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                 baseDb: baseDbKey,
                 targetWorkspaceDbList,
                 targetRelations: cur?.targetRelations ?? [],
+                targetProperties: cur?.targetProperties ?? [],
             }
         })
         setStep(cur => cur + 1);
@@ -199,6 +212,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                 baseDb: cur.baseDb,
                 targetWorkspaceDbList: cur.targetWorkspaceDbList,
                 targetRelations: rels,
+                targetProperties: cur.targetProperties,
             }
         })
         setStep(cur => cur + 1);

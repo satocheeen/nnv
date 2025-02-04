@@ -27,7 +27,7 @@ type Props = {
  * フィルタに使用する項目を選択する画面
  */
 export default function SelectFilterPropertyBody(props: Props) {
-    const [ selectedProperties, setSelectedProperties ] = useState<PropetyKey[]>([]);
+    const [ selectedProperties, setSelectedProperties ] = useState<PropetyKey[]>(props.workData.targetProperties);
     const { dbIdsInTargetRelations } = useSetting({
         workData: props.workData,
     })
