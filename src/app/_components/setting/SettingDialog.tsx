@@ -29,11 +29,9 @@ export type DbKey = {
     dbId: string;
 }
 export type WorkData = {
-    // 基点データベースID
-    // baseDb: DbKey;
-    targetWorkspaceDbList: DbDefine[];  // 基点データベースの属するワークスペースに存在するDB一覧
-    targetRelations: RelationKey[];     // 使用するリレーション項目
-    targetProperties: PropertyKey[];  // 使用するフィルタやURL項目
+    targetWorkspaceDbList?: DbDefine[];  // 基点データベースの属するワークスペースに存在するDB一覧
+    targetRelations?: RelationKey[];     // 使用するリレーション項目
+    targetProperties?: PropertyKey[];  // 使用するフィルタやURL項目
 }
 export type DatasetInfo = {
     id: string;
@@ -46,11 +44,36 @@ type Props = {
 export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) => {
     // 登録・編集対象のデータセット情報
     const [ selectedDatasetId, setSelectedDatasetId ] = useState<string|undefined>(datasetId);
-    const [ step, setStep ] = useState<Step>(datasetId ? Step.SelectDb : Step.SelectDataset);
-    const [ workData, setWorkData ] = useState<WorkData|undefined>();
+    const [ step, setStep ] = useState<Step>(datasetId === 'new' ? Step.SelectDb : Step.SelectDataset);
+    const [ workData, setWorkData ] = useState<WorkData>({});
     const { t } = useTranslation();
     const { loadLatestData: getData, createDataset, updateNetworkDefine } = useData();
 
+    // 編集前のNetworkDefine情報
+    const [ datasets ] = useAtom(dataSetsAtom);
+    const baseNetworkDefine = useMemo(() => {
+        const target = datasets.find(item => item.id === selectedDatasetId);
+        return target?.networkDefine;
+    }, [datasets, selectedDatasetId])
+
+    const [ baseDb, setBaseDb ] = useState<DbKey|undefined>();
+    const workSettingInfo = useMemo((): WorkSettingInfo | undefined => {
+        if (baseNetworkDefine) {
+            return {
+                type: 'edit',
+                baseNetworkDefine,
+                workData,
+            }
+        } else if (baseDb) {
+            return {
+                type: 'new',
+                baseDb,
+                workData,
+            }
+        }
+    }, [baseDb, baseNetworkDefine, workData])
+    
+    
     // 最新のストア状態で実行したいので、useCallbackは使用していない
     const loadLatestData = useCallback(async() => {
         // 最新データ取得
@@ -86,41 +109,8 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
         }
     }, { immediate: true })
 
-    // 編集前のNetworkDefine情報（保存時にマージする）
-    const [ baseNetworkDefine, setBaseNetworkDefine ] = useState<NetworkDefine|undefined>();
-    const [ baseDb, setBaseDb ] = useState<DbKey|undefined>();
-    const workSettingInfo = useMemo((): WorkSettingInfo | undefined => {
-        if (baseNetworkDefine) {
-            return {
-                type: 'edit',
-                baseNetworkDefine,
-                workData: {
-                    targetRelations: workData?.targetRelations ?? [],
-                    targetWorkspaceDbList: workData?.targetWorkspaceDbList ?? [],
-                    targetProperties: workData?.targetProperties ?? [],
-                },
-            }
-        } else if (baseDb) {
-            return {
-                type: 'new',
-                baseDb,
-                workData: {
-                    targetRelations: workData?.targetRelations ?? [],
-                    targetWorkspaceDbList: workData?.targetWorkspaceDbList ?? [],
-                    targetProperties: workData?.targetProperties ?? [],
-                },
-            }
-        }
-    }, [baseDb, baseNetworkDefine, workData?.targetProperties, workData?.targetRelations, workData?.targetWorkspaceDbList])
-
     const { networkDefine } = useSetting({
         data: workSettingInfo,
-        // workData: {
-        //     baseDb: workData?.baseDb ?? { dbId: '', workspaceId: '' },
-        //     targetRelations: workData?.targetRelations ?? [],
-        //     targetWorkspaceDbList: workData?.targetWorkspaceDbList ?? [],
-        //     targetProperties: workData?.targetProperties ?? [],
-        // }
     });
     const handleSave = useAtomCallback(
         useCallback((get, set, targets: PropertyKey[]) => {
@@ -176,39 +166,14 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
             const datasets = get(dataSetsAtom);
             const target = datasets.find(item => item.id === datasetId);
             console.log('setWorkData', target);
-            setBaseNetworkDefine(target?.networkDefine);
-            if (target) {
-                setWorkData({
-                    // baseDb: {
-                    //     workspaceId: target.networkDefine.workspaceId,
-                    //     dbId: target.networkDefine.dbList[0].id,
-                    // },
-                    targetWorkspaceDbList: [],
-                    targetRelations: target.networkDefine.relationList.map(item => {
-                        return {
-                            dbId: item.from.dbId,
-                            propertyId: item.from.propertyId,
-                        }
-                    }),
-                    targetProperties: target.networkDefine.dbList.reduce((acc, cur) => {
-                        const propList = cur.properties.map((prop): PropertyKey => {
-                            return {
-                                dbId: cur.id,
-                                propertyId: prop.id,
-                            }
-                        })
-                        console.log('propList', propList)
-                        return [...acc, ...propList];
-                    }, [] as PropertyKey[])
-                })
-            }
-
+            setSelectedDatasetId(datasetId);
         }, [])
     )
 
     const handleNextSelectDataset = useAtomCallback(
         useCallback((get, set, datasetId: string) => {
-            setStep(cur => cur + 1);
+            console.log('datasetId', datasetId);
+            setStep(Step.SelectRelationCol);
             if (selectedDatasetId === datasetId) return;
             setSelectedDatasetId(datasetId);
             updateWorkDataByDatasetId(datasetId);
@@ -247,8 +212,12 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
     }, [])
 
     const onBack = useCallback(() => {
-        setStep(step - 1);
-    }, [step, setStep]);
+        if (step === Step.SelectRelationCol && workSettingInfo?.type === 'edit') {
+            setStep(Step.SelectDataset);
+        } else {
+            setStep(cur => cur -1);
+        }
+    }, [step, workSettingInfo?.type]);
 
     const body = useMemo(() => {
         switch(step) {

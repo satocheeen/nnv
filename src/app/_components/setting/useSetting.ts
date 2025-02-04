@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { DbKey, WorkData } from "./SettingDialog";
-import { NetworkDefine } from "@/app/_types/types";
+import { NetworkDefine, PropertyKey } from "@/app/_types/types";
 
 export type RelPropertyInfo = {
     dbId: string;
@@ -57,12 +57,62 @@ export default function useSetting(props: Props) {
         }
     }, [props.data])
 
+    const targetWorkspaceDbList = useMemo(() => {
+        if (props.data?.type === 'new') {
+            return props.data?.workData.targetWorkspaceDbList ?? [];
+        } else if (props.data?.type === 'edit') {
+            return props.data.workData.targetWorkspaceDbList ?? props.data.baseNetworkDefine.dbList;
+        } else {
+            return [];
+        }
+    }, [props.data])
+
+    const targetRelations = useMemo(() => {
+        if (!props.data) return [];
+        if (props.data.type === 'new') {
+            return props.data.workData.targetRelations ?? [];
+        }
+        if (props.data.workData.targetRelations) {
+            return props.data.workData.targetRelations;
+        } else {
+            return props.data.baseNetworkDefine.relationList.map(item => {
+                return {
+                    dbId: item.from.dbId,
+                    propertyId: item.from.propertyId,
+                }
+            })
+        }
+    }, [props.data])
+
+    const targetProperties = useMemo(() => {
+        if (!props.data) return [];
+        if (props.data.type === 'new') {
+            return props.data.workData.targetProperties ?? [];
+        }
+        if (props.data.workData.targetProperties) {
+            return props.data.workData.targetProperties;
+        } else {
+            return props.data.baseNetworkDefine.dbList.reduce((acc, cur) => {
+                const propList = cur.properties.map((prop): PropertyKey => {
+                    return {
+                        dbId: cur.id,
+                        propertyId: prop.id,
+                    }
+                })
+                console.log('propList', propList)
+                return [...acc, ...propList];
+            }, [] as PropertyKey[])
+        }
+
+    }, [props.data])
+
     /**
      * 指定のDBが保持するリレーション項目の情報を返す
      */
     const getRelationProperies = useCallback((dbId: string): RelPropertyInfo[] => {
         if (!props.data) return [];
-        const target = props.data.workData.targetWorkspaceDbList.find(db => db.id === dbId);
+        const target = targetWorkspaceDbList.find(db => db.id === dbId);
+        console.log('getRelationProperies target', target)
         if (!target) {
             return [];
         }
@@ -76,7 +126,7 @@ export default function useSetting(props: Props) {
                 const relDbId = p.relation.database_id;
                 const relDbPropertyName = p.relation.type === 'dual_property' ? p.relation.dual_property.synced_property_name : p.name;
                 const relDbPropertyId = p.relation.type === 'dual_property' ? p.relation.dual_property.synced_property_id : p.id;
-                const relDb = props.data?.workData.targetWorkspaceDbList.find(db => db.id === relDbId);
+                const relDb = targetWorkspaceDbList.find(db => db.id === relDbId);
                 if (!relDb) {
                     console.warn('DBなし', relDbId);
                     return null;
@@ -94,7 +144,7 @@ export default function useSetting(props: Props) {
                 };
             })
             .filter(item => item !== null) as RelPropertyInfo[];
-    }, [props.data])
+    }, [props.data, targetWorkspaceDbList])
 
     /**
      * targetRelationsで使用されているDB一覧
@@ -104,8 +154,8 @@ export default function useSetting(props: Props) {
         if (!props.data) return [];
 
         // selectedされた先のDB
-        const relDbIds = props.data.workData.targetRelations.map(key => {
-            const target = props.data?.workData.targetWorkspaceDbList.find(item => item.id === key.dbId);
+        const relDbIds = targetRelations.map(key => {
+            const target = targetWorkspaceDbList.find(item => item.id === key.dbId);
             if (!target) return;
             const targetProp = target.properties.find(prop => prop.id === key.propertyId);
             if (targetProp?.type !== 'relation') return;
@@ -118,13 +168,15 @@ export default function useSetting(props: Props) {
         }, [] as string[])
         // 基点DB + selectedされた先のDB
         return [ baseDb.dbId, ...relDbIds ];
-    }, [baseDb, props.data])
+    }, [baseDb, props.data, targetRelations, targetWorkspaceDbList])
 
     // 関連するDBたちが持つRelation項目
     const relationItems = useMemo((): DbRelItem[] => {
+        console.log('dbIdsInTargetRelations', dbIdsInTargetRelations)
         return dbIdsInTargetRelations.reduce((acc, cur) => {
              // 指定のDBが保持するリレーション項目の情報を取得
             const rels = getRelationProperies(cur);
+            console.log('rels', rels)
             // 既にあるものと対のものは追加しない
             const targets = rels.filter(rel => {
                 const exist = acc.some(item => {
@@ -163,12 +215,12 @@ export default function useSetting(props: Props) {
         if (!props.data) return;
         return {
             dbList: dbIdsInTargetRelations.map(id => {
-                return props.data?.workData.targetWorkspaceDbList.find(item => item.id === id);
+                return targetWorkspaceDbList.find(item => item.id === id);
             }).filter(item => !!item),
             workspaceId: baseDb.workspaceId,
             relationList: relationItems
             .filter(item => {
-                const isTarget = props.data?.workData.targetRelations.some(target => {
+                const isTarget = targetRelations.some(target => {
                     return target.dbId === item.from.dbId && target.propertyId === item.from.propertyId;
                 })
                 return isTarget;
@@ -188,12 +240,15 @@ export default function useSetting(props: Props) {
                 return dbIdsInTargetRelations.includes(item.from.dbId) && dbIdsInTargetRelations.includes(item.to.dbId);
             })
         }
-    }, [baseDb, dbIdsInTargetRelations, props.data, relationItems])
+    }, [baseDb, dbIdsInTargetRelations, props.data, relationItems, targetRelations, targetWorkspaceDbList])
 
     return {
         dbIdsInTargetRelations,
         relationItems,
         networkDefine,
+        targetWorkspaceDbList,
+        targetProperties,
+        targetRelations,
     }
 
 }

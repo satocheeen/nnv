@@ -22,11 +22,19 @@ type DbRelItemWithSelected = DbRelItem & {
 }
 
 export default function SelectRelationBody(props: Props) {
-    const [ selectedRelations, setSelectedRelations ] = useState<RelationKey[]>(props.data.workData.targetRelations);
+    const [ selectedRelations, setSelectedRelations ] = useState<RelationKey[]>(
+        props.data.type === 'edit' 
+        ? props.data.baseNetworkDefine.relationList.map(item => {
+            return {
+                dbId: item.from.dbId,
+                propertyId: item.from.propertyId,
+            }
+        })
+        : []
+    );
 
     const workSettingInfo = useMemo((): WorkSettingInfo => {
         const workData: WorkData = {
-            // baseDb: props.workData.baseDb,
             targetWorkspaceDbList: props.data.workData.targetWorkspaceDbList,
             targetRelations: selectedRelations,
             targetProperties: props.data.workData.targetProperties,
