@@ -9,9 +9,11 @@ import NotionIcon from '../common/NotionIcon';
 import Image from 'next/image';
 import { Confirm } from '../Confirm';
 import { DbKey } from './SettingDialog';
+import { WorkSettingInfo } from './useSetting';
 
 type Props = {
-    datasetId: string;
+    data: WorkSettingInfo;
+    // datasetId: string;
     onBack: () => void;
     onNext: (targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => void;
 }
@@ -24,7 +26,10 @@ type Props = {
 export default function SelectDatabaseBody(props: Props) {
     const [workspaceList, setWorkspaceList] = useState([] as WorkspaceInfo[]);
     const { t } = useTranslation();
-    const [selectedDb, setSelectedDb] = useState<DbKey | undefined>();
+    const [selectedDb, setSelectedDb] = useState<DbKey | undefined>(props.data.type === 'edit' ? {
+        workspaceId: props.data.baseNetworkDefine.workspaceId,
+        dbId: props.data.baseNetworkDefine.dbList[0].id
+    }: undefined);
     
     console.log('selectedDb', selectedDb)
     // DB一覧読み込み
@@ -45,7 +50,7 @@ export default function SelectDatabaseBody(props: Props) {
             }
         }
         loadDbList();
-    }, [getWorkspaceList, props.datasetId, t]);
+    }, [getWorkspaceList, t]);
 
 
     // DB選択

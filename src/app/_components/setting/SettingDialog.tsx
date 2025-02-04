@@ -173,7 +173,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
     const handleNextSelectDataset = useAtomCallback(
         useCallback((get, set, datasetId: string) => {
             console.log('datasetId', datasetId);
-            setStep(Step.SelectRelationCol);
+            setStep(cur => cur + 1);
             if (selectedDatasetId === datasetId) return;
             setSelectedDatasetId(datasetId);
             updateWorkDataByDatasetId(datasetId);
@@ -188,8 +188,8 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
         setWorkData(cur => {
             return {
                 targetWorkspaceDbList,
-                targetRelations: cur?.targetRelations ?? [],
-                targetProperties: cur?.targetProperties ?? [],
+                targetRelations: cur?.targetRelations,
+                targetProperties: cur?.targetProperties,
             }
         })
         setBaseDb(baseDbKey);
@@ -212,26 +212,22 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
     }, [])
 
     const onBack = useCallback(() => {
-        if (step === Step.SelectRelationCol && workSettingInfo?.type === 'edit') {
-            setStep(Step.SelectDataset);
-        } else {
-            setStep(cur => cur -1);
-        }
-    }, [step, workSettingInfo?.type]);
+        setStep(cur => cur -1);
+    }, []);
 
     const body = useMemo(() => {
         switch(step) {
             case Step.SelectDataset:
                 return <SelectDatasetBody onNext={handleNextSelectDataset} onClose={()=>call.end()} />
             case Step.SelectDb:
-                if (!selectedDatasetId) {
-                    console.warn('想定外')
+                if (!workSettingInfo) {
+                    console.warn('想定外 workSettingInfo undefined' )
                     return null;
                 }
                 return <SelectDatabaseBody
                         onNext={handleNextSelectDatabase}
                         onBack={onBack}
-                        datasetId={selectedDatasetId}
+                        data={workSettingInfo}
                         />;
             case Step.SelectRelationCol:
                 if (!workSettingInfo) {

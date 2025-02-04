@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { DbKey, WorkData } from "./SettingDialog";
-import { NetworkDefine, PropertyKey } from "@/app/_types/types";
+import { DbDefine, NetworkDefine, PropertyKey } from "@/app/_types/types";
 
 export type RelPropertyInfo = {
     dbId: string;
@@ -61,7 +61,16 @@ export default function useSetting(props: Props) {
         if (props.data?.type === 'new') {
             return props.data?.workData.targetWorkspaceDbList ?? [];
         } else if (props.data?.type === 'edit') {
-            return props.data.workData.targetWorkspaceDbList ?? props.data.baseNetworkDefine.dbList;
+            const baseNetworkDefine = props.data.baseNetworkDefine;
+            // スタイル情報マージ
+            if (!props.data.workData.targetWorkspaceDbList) {
+                return props.data.baseNetworkDefine.dbList;
+            } else {
+                return props.data.workData.targetWorkspaceDbList.map((target): DbDefine => {
+                    const hit = baseNetworkDefine.dbList.find(item => item.id === target.id);
+                    return Object.assign({}, target, { nodeStyle: hit?.nodeStyle })
+                })
+            }
         } else {
             return [];
         }
