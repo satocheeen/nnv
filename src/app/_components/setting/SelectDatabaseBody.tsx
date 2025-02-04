@@ -13,7 +13,6 @@ import { WorkSettingInfo } from './useSetting';
 
 type Props = {
     data: WorkSettingInfo;
-    // datasetId: string;
     onBack: () => void;
     onNext: (targetWorkspaceDbList: DbDefine[], baseDbKey: DbKey) => void;
 }

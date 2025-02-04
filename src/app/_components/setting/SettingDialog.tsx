@@ -64,7 +64,7 @@ export const SettingDialog = createCallable<Props, void>(({ call, datasetId }) =
                 baseNetworkDefine,
                 workData,
             }
-        } else if (baseDb) {
+        } else {
             return {
                 type: 'new',
                 baseDb,

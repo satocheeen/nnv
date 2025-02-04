@@ -36,7 +36,7 @@ export type WorkSettingInfo = {
     workData: WorkData;                 // 編集中の情報
 } | {
     type: 'new';
-    baseDb: DbKey;
+    baseDb?: DbKey;
     workData: WorkData;                 // 登録中の情報
 }
 
